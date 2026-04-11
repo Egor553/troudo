@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+
+# IDE
+.vscode
+.idea
+
+# Backend SECRETS (VERY IMPORTANT)
+server/.env
+server/database.json
+server/node_modules
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
