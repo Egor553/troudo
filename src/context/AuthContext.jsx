@@ -25,6 +25,13 @@ export function AuthProvider({ children }) {
     return data;
   }, [token]);
 
+  // ── ВЫЙТИ ────────────────────────────────────────────────
+  const logout = useCallback(() => {
+    localStorage.removeItem('troudo_token');
+    setToken(null);
+    setUser(null);
+  }, []);
+
   const refreshUser = useCallback(async () => {
     if (!token) return;
     try {
@@ -71,13 +78,6 @@ export function AuthProvider({ children }) {
     setUser(data.user);
     return data.user;
   }, [apiFetch]);
-
-  // ── ВЫЙТИ ────────────────────────────────────────────────
-  const logout = useCallback(() => {
-    localStorage.removeItem('troudo_token');
-    setToken(null);
-    setUser(null);
-  }, []);
 
   // ── ОБНОВИТЬ ПРОФИЛЬ (в т.ч. роль) ────────────────────────
   const updateProfile = useCallback(async (updates) => {

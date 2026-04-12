@@ -1,22 +1,8 @@
-const prisma = require('../utils/prisma');
+const KworkService = require('../services/KworkService');
 
 const getAllKworks = async (req, res) => {
-  const { category, freelancerId } = req.query;
-
   try {
-    const kworks = await prisma.kwork.findMany({
-      where: {
-        AND: [
-          category ? { category } : {},
-          freelancerId ? { freelancerId } : {},
-        ],
-      },
-      include: {
-        freelancer: { select: { name: true, avatar: true, username: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
+    const kworks = await KworkService.getAll(req.query);
     res.json(kworks);
   } catch (err) {
     res.status(500).json({ message: 'Ошибка при получении кворков: ' + err.message });
@@ -25,27 +11,17 @@ const getAllKworks = async (req, res) => {
 
 const getKworkById = async (req, res) => {
   try {
-    const kwork = await prisma.kwork.findUnique({
-      where: { id: req.params.id },
-      include: {
-        freelancer: { select: { name: true, avatar: true, username: true } },
-      },
-    });
-    if (!kwork) return res.status(404).json({ message: 'Кворк не найден' });
+    const kwork = await KworkService.getById(req.params.id);
     res.json(kwork);
   } catch (err) {
-    res.status(500).json({ message: 'Ошибка: ' + err.message });
+    const status = err.message === 'NOT_FOUND' ? 404 : 500;
+    res.status(status).json({ message: err.message });
   }
 };
 
 const createKwork = async (req, res) => {
   try {
-    const kwork = await prisma.kwork.create({
-      data: {
-        ...req.body,
-        freelancerId: req.user.id,
-      },
-    });
+    const kwork = await KworkService.create(req.body, req.user.id);
     res.status(201).json(kwork);
   } catch (err) {
     res.status(500).json({ message: 'Ошибка при создании кворка: ' + err.message });

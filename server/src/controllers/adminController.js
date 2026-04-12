@@ -1,25 +1,9 @@
-const prisma = require('../utils/prisma');
+const AdminService = require('../services/AdminService');
 
 const getStats = async (req, res) => {
   try {
-    const totalUsers = await prisma.user.count();
-    const activeDeals = await prisma.deal.count({
-      where: { status: { not: 'completed' } },
-    });
-    
-    const completedDeals = await prisma.deal.findMany({
-      where: { status: 'completed' },
-      select: { amount: true },
-    });
-    
-    const turnover = completedDeals.reduce((sum, d) => sum + Number(d.amount), 0);
-
-    res.json({
-      totalUsers,
-      activeDeals,
-      turnover,
-      pendingKworks: 0,
-    });
+    const stats = await AdminService.getPlatformStats();
+    res.json(stats);
   } catch (err) {
     res.status(500).json({ message: 'Ошибка при получении статистики: ' + err.message });
   }
@@ -27,10 +11,8 @@ const getStats = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-    res.json(users.map(({ password, ...u }) => u));
+    const users = await AdminService.getAllUsers();
+    res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Ошибка при получении пользователей: ' + err.message });
   }
