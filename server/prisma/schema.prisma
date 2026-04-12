@@ -33,6 +33,7 @@ model User {
   roles          Role[]   @default([client, freelancer])
   bio            String?
   specialization String?
+  lastSeen       DateTime @default(now())
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -42,6 +43,7 @@ model User {
   dealsAsClient     Deal[]        @relation("ClientDeals")
   dealsAsFreelancer Deal[]        @relation("FreelancerDeals")
   transactions      Transaction[]
+  sentMessages      ChatMessage[]
 }
 
 model Project {
@@ -97,6 +99,22 @@ model Deal {
   client       User     @relation("ClientDeals", fields: [clientId], references: [id])
   freelancerId String
   freelancer   User     @relation("FreelancerDeals", fields: [freelancerId], references: [id])
+  messages     ChatMessage[]
+  
+  paymentId     String?
+  paymentStatus String?  @default("pending") // pending, succeeded, canceled
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  text      String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  dealId   String
+  deal     Deal   @relation(fields: [dealId], references: [id])
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id])
 }
 
 model Transaction {

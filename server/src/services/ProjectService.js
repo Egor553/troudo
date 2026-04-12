@@ -34,8 +34,15 @@ class ProjectService {
   }
 
   static async create(data, clientId) {
+    const { title, description, budget, category } = data;
     return await prisma.project.create({
-      data: { ...data, clientId },
+      data: { 
+        title, 
+        description, 
+        budget, 
+        category, 
+        clientId 
+      },
     });
   }
 
@@ -53,11 +60,17 @@ class ProjectService {
   }
 
   static async createOffer(projectId, data, freelancerId) {
+    const { price, message } = data;
     const project = await prisma.project.findUnique({ where: { id: projectId } });
     if (!project) throw new Error('NOT_FOUND');
 
     return await prisma.offer.create({
-      data: { ...data, projectId, freelancerId },
+      data: { 
+        price, 
+        message, 
+        projectId, 
+        freelancerId 
+      },
     });
   }
 }

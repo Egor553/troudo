@@ -15,6 +15,8 @@ const KworkDetail = () => {
   const [kwork, setKwork] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activePackage, setActivePackage] = useState(0);
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     const fetchKwork = async () => {
@@ -29,6 +31,36 @@ const KworkDetail = () => {
     };
     fetchKwork();
   }, [id, apiFetch]);
+
+  const handleBuy = async () => {
+    if (!user) return navigate('/login');
+    setPurchaseLoading(true);
+    try {
+      const deal = await apiFetch('/deals', {
+        method: 'POST',
+        body: JSON.stringify({
+          kworkId: kwork.id,
+          amount: currentPkg.price,
+          freelancerId: kwork.freelancerId,
+        })
+      });
+      
+      // Request payment URL
+      const { checkoutUrl } = await apiFetch(`/payments/pay/${deal.id}`, { method: 'POST' });
+      
+      // Redirect to YooKassa
+      if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+      } else {
+          navigate(`/order/${deal.id}`);
+      }
+    } catch (err) {
+      alert('Ошибка при создании заказа: ' + err.message);
+    } finally {
+      setPurchaseLoading(false);
+      setShowConfirm(false);
+    }
+  };
 
   if (loading) return <div className="container" style={{ padding: '100px', textAlign: 'center' }}>Загрузка услуги...</div>;
   if (!kwork) return <div className="container" style={{ padding: '100px', textAlign: 'center' }}>Услуга не найдена</div>;
@@ -118,8 +150,12 @@ const KworkDetail = () => {
                 </div>
 
                 <div className="pricing-actions">
-                    <button className="btn-primary w-full" disabled={user?.id === kwork.freelancerId}>
-                        <ShoppingCart size={18} /> Купить за {currentPkg.price} ₽
+                    <button 
+                        className="btn-primary w-full" 
+                        disabled={user?.id === kwork.freelancerId || purchaseLoading}
+                        onClick={() => setShowConfirm(true)}
+                    >
+                        <ShoppingCart size={18} /> {purchaseLoading ? 'Обработка...' : `Купить за ${currentPkg.price} ₽`}
                     </button>
                     <button className="btn-secondary w-full">
                         <MessageSquare size={18} /> Связаться
@@ -134,6 +170,26 @@ const KworkDetail = () => {
           </div>
         </aside>
       </div>
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="modal-overlay" onClick={() => setShowConfirm(false)}>
+            <div className="modal-content glass" onClick={e => e.stopPropagation()}>
+                <h3>Подтверждение покупки</h3>
+                <p>Вы собираетесь купить услугу <strong>"{kwork.title}"</strong> за <strong>{currentPkg.price} ₽</strong>.</p>
+                <div className="modal-info-box glass">
+                    <Check size={16} color="#10b981" />
+                    <span>Средства будут заморожены в системе до момента подтверждения выполнения вами.</span>
+                </div>
+                <div className="modal-actions">
+                    <button className="btn-link" onClick={() => setShowConfirm(false)}>Отмена</button>
+                    <button className="btn-primary" onClick={handleBuy} disabled={purchaseLoading}>
+                        {purchaseLoading ? 'Создание заказа...' : 'Подтвердить запуск'}
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 };

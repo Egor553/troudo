@@ -27,8 +27,15 @@ class KworkService {
   }
 
   static async create(data, freelancerId) {
+    const { title, description, price, category } = data;
     return await prisma.kwork.create({
-      data: { ...data, freelancerId },
+      data: { 
+        title, 
+        description, 
+        price, 
+        category, 
+        freelancerId 
+      },
     });
   }
 }

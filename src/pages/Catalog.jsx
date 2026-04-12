@@ -1,181 +1,127 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Clock, MessageSquare, DollarSign, ChevronRight, Send, AlertCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Search, Filter, Star, Clock, ChevronRight, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const categories = ['Все категории', 'Дизайн', 'Разработка и IT', 'Тексты', 'SEO и трафик', 'Соцсети и маркетинг', 'Аудио, видео', 'Бизнес'];
+const categories = ['Все категории', 'Дизайн', 'Разработка и IT', 'Тексты', 'Маркетинг', 'Видео', 'Соцсети', 'Аудио'];
 
 const Catalog = () => {
-  const [projects, setProjects] = useState([]);
+  const [kworks, setKworks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedProject, setSelectedProject] = useState(null); // Для модалки отклика
-  const [offerData, setOfferData] = useState({ price: '', message: '' });
-  const [offerLoading, setOfferLoading] = useState(false);
-  const [offerError, setOfferError] = useState('');
-
-  const { user, apiFetch, isFreelancer } = useAuth();
-  const location = useLocation();
-  
-  const queryParams = new URLSearchParams(location.search);
-  const initialCat = queryParams.get('cat') || 'Все категории';
-  const [activeCat, setActiveCat] = useState(initialCat);
+  const [activeCat, setActiveCat] = useState('Все категории');
+  const { apiFetch } = useAuth();
 
   useEffect(() => {
-    fetchProjects();
+    fetchKworks();
   }, [activeCat, search]);
 
-  const fetchProjects = async () => {
+  const fetchKworks = async () => {
     setLoading(true);
     try {
-      let url = `/projects?q=${search}`;
+      let url = `/kworks?q=${search}`;
       if (activeCat !== 'Все категории') {
         url += `&category=${encodeURIComponent(activeCat)}`;
       }
       const data = await apiFetch(url);
-      setProjects(data);
+      setKworks(data);
     } catch (err) {
-      console.error('Failed to fetch projects:', err);
+      console.error('Failed to fetch kworks:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMakeOffer = async (e) => {
-    e.preventDefault();
-    if (!isFreelancer) {
-        setOfferError('Только фрилансеры могут оставлять отклики.');
-        return;
-    }
-    setOfferLoading(true);
-    setOfferError('');
-    try {
-        await apiFetch(`/projects/${selectedProject.id}/offers`, {
-            method: 'POST',
-            body: JSON.stringify(offerData)
-        });
-        setSelectedProject(null);
-        setOfferData({ price: '', message: '' });
-        fetchProjects(); // Обновляем счетчик предложений
-    } catch (err) {
-        setOfferError(err.message);
-    } finally {
-        setOfferLoading(false);
-    }
-  };
-
   return (
-    <div className="exchange-page container">
-      <section className="exchange-hero">
-        <div className="exchange-hero-content">
-          <h1>Биржа проектов</h1>
-          <p>Найдите идеальный заказ для своей работы или предложите свои услуги</p>
-          <div className="exchange-search-wrap glass">
+    <div className="catalog-page container fade-in">
+      <header className="catalog-header">
+        <div className="catalog-hero-minimal glass">
+          <h1>Каталог услуг</h1>
+          <p>Профессиональные фриланс-услуги для вашего бизнеса по фиксированной цене</p>
+          <div className="catalog-search-bar">
             <Search size={20} className="search-icon" />
             <input 
               type="text" 
-              placeholder="Поиск по задачам..." 
+              placeholder="Что вы ищете? Например: Логотип" 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <button className="btn-primary" onClick={fetchProjects}>Найти</button>
+            <button className="btn-primary" onClick={fetchKworks}>Найти услуги</button>
           </div>
         </div>
-      </section>
+      </header>
 
-      <div className="exchange-layout">
-        <aside className="exchange-sidebar">
-          <div className="filter-card glass">
-            <div className="filter-header"><Filter size={18} /><h3>Категории</h3></div>
-            <div className="cat-list">
+      <div className="catalog-content-layout">
+        <aside className="catalog-sidebar">
+          <div className="filter-group glass">
+            <h3>Категории</h3>
+            <div className="filter-list">
               {categories.map(cat => (
-                <button key={cat} className={`cat-item ${activeCat === cat ? 'active' : ''}`} onClick={() => setActiveCat(cat)}>
+                <button 
+                  key={cat} 
+                  className={`filter-item ${activeCat === cat ? 'active' : ''}`}
+                  onClick={() => setActiveCat(cat)}
+                >
                   {cat}
                 </button>
               ))}
             </div>
           </div>
+
+          <div className="filter-group glass mt-4">
+            <h3>Бюджет</h3>
+            <div className="price-filters">
+              <input type="number" placeholder="От 500 ₽" className="glass-input" />
+              <input type="number" placeholder="До" className="glass-input" />
+            </div>
+          </div>
         </aside>
 
-        <main className="exchange-main">
-          <div className="results-info">
-            <span>Найдено проектов: <strong>{projects.length}</strong></span>
-          </div>
-
+        <main className="catalog-results">
           {loading ? (
-            <div className="exchange-loading">Загрузка проектов...</div>
+            <div className="catalog-loading">Загрузка лучших предложений...</div>
           ) : (
-            <div className="projects-list">
-              {projects.length > 0 ? (
-                projects.map(project => (
-                  <div key={project.id} className="project-card glass">
-                    <div className="project-main-info">
-                      <div className="project-top">
-                        <span className="project-category">{project.category}</span>
-                        <span className="project-date"><Clock size={12} /> {new Date(project.createdAt).toLocaleDateString()}</span>
+            <div className="kworks-grid">
+              {kworks.length > 0 ? (
+                kworks.map(kwork => (
+                  <Link to={`/kwork/${kwork.id}`} key={kwork.id} className="kwork-card-link">
+                    <div className="kwork-card glass">
+                      <div className="kwork-card-preview">
+                        <div className="preview-placeholder">
+                          <img src={`https://api.dicebear.com/7.x/shapes/svg?seed=${kwork.id}`} alt="preivew" />
+                        </div>
+                        <div className="kwork-card-badge">{kwork.category}</div>
                       </div>
-                      <h2 className="project-title">{project.title}</h2>
-                      <p className="project-desc">{project.description}</p>
-                      <div className="project-stats">
-                        <div className="stat-item"><MessageSquare size={16} /><span>{project.offersCount} предложений</span></div>
-                        <div className="stat-item"><DollarSign size={16} /><span>Бюджет: <strong>{project.budget} ₽</strong></span></div>
+                      <div className="kwork-card-info">
+                        <div className="kwork-card-author">
+                          <div className="author-avatar">{kwork.freelancer.avatar || '👤'}</div>
+                          <span>{kwork.freelancer.name}</span>
+                        </div>
+                        <h3 className="kwork-card-title">{kwork.title}</h3>
+                        <div className="kwork-card-meta">
+                          <div className="meta-rating">
+                            <Star size={14} fill="var(--warning)" color="var(--warning)" />
+                            <span>5.0</span>
+                          </div>
+                          <div className="meta-price">
+                            <span className="label">от</span>
+                            <span className="value">{kwork.price} ₽</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="project-actions">
-                      <button 
-                        className="btn-primary" 
-                        onClick={() => setSelectedProject(project)}
-                        disabled={project.clientId === user?.id}
-                      >
-                        {project.clientId === user?.id ? 'Ваш проект' : 'Откликнуться'}
-                      </button>
-                    </div>
-                  </div>
+                  </Link>
                 ))
               ) : (
-                <div className="no-results glass"><h3>Проектов не найдено</h3></div>
+                <div className="no-kworks glass">
+                  <h3>Услуг не найдено</h3>
+                  <p>Попробуйте изменить параметры поиска или категорию</p>
+                </div>
               )}
             </div>
           )}
         </main>
       </div>
-
-      {/* Модалка отклика */}
-      {selectedProject && (
-        <div className="modal-overlay" onClick={() => setSelectedProject(null)}>
-          <div className="modal-content glass" onClick={e => e.stopPropagation()}>
-            <h3>Отклик на проект: {selectedProject.title}</h3>
-            {offerError && <div className="form-error"><AlertCircle size={16}/> {offerError}</div>}
-            <form onSubmit={handleMakeOffer}>
-                <div className="form-group">
-                    <label>Ваша цена (₽)</label>
-                    <input 
-                        type="number" 
-                        required 
-                        value={offerData.price}
-                        onChange={e => setOfferData({...offerData, price: e.target.value})}
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Комментарий к отклику</label>
-                    <textarea 
-                        rows="4" 
-                        placeholder="Почему стоит выбрать вас?" 
-                        required
-                        value={offerData.message}
-                        onChange={e => setOfferData({...offerData, message: e.target.value})}
-                    />
-                </div>
-                <div className="modal-actions">
-                    <button type="button" className="btn-link" onClick={() => setSelectedProject(null)}>Отмена</button>
-                    <button type="submit" className="btn-primary" disabled={offerLoading}>
-                        {offerLoading ? 'Отправка...' : <><Send size={16}/> Отправить предложение</>}
-                    </button>
-                </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

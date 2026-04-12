@@ -60,10 +60,10 @@ const Header = () => {
             {!isLoggedIn ? (
               /* Guest nav */
               <>
-                <Link to="/catalog" className="nav-link">Каталог</Link>
+                <Link to="/catalog" className="nav-link">Услуги</Link>
+                <Link to="/exchange" className="nav-link">Биржа</Link>
                 <Link to="/login" className="nav-link">Вход</Link>
                 <Link to="/register" className="btn-primary">Регистрация</Link>
-                <Link to="/become-freelancer" className="btn-secondary header-freelancer-btn">Фрилансеру</Link>
               </>
             ) : (
               /* Logged-in nav — кворки, заказы, биржа, чат, колокол, баланс, аватар */
@@ -73,11 +73,15 @@ const Header = () => {
                   <Layers size={16} />
                   <span>Кворки</span>
                 </Link>
-                <Link to="/dashboard" className="header-nav-item" id="nav-orders">
+                <Link to="/orders" className="header-nav-item" id="nav-orders">
                   <ShoppingBag size={16} />
                   <span>Заказы</span>
                 </Link>
                 <Link to="/catalog" className="header-nav-item" id="nav-catalog">
+                  <ShoppingCart size={16} />
+                  <span>Услуги</span>
+                </Link>
+                <Link to="/exchange" className="header-nav-item" id="nav-exchange">
                   <Building2 size={16} />
                   <span>Биржа</span>
                 </Link>
@@ -169,7 +173,7 @@ const Header = () => {
                       <Link to="/freelancer/dashboard" className="dropdown-item">
                         <Layers size={16} /> Мои кворки
                       </Link>
-                      <Link to="/dashboard" className="dropdown-item">
+                      <Link to="/orders" className="dropdown-item">
                         <ShoppingBag size={16} /> Мои заказы
                       </Link>
                       <Link to="/freelancer/create-kwork" className="dropdown-item">
@@ -231,7 +235,7 @@ const Header = () => {
             <>
               <Link to={`/user/${user.username}`} className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Мой профиль</Link>
               <Link to="/freelancer/dashboard" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Кворки</Link>
-              <Link to="/dashboard" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Заказы</Link>
+              <Link to="/orders" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Заказы</Link>
               <Link to="/catalog" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Биржа</Link>
               <Link to="/settings" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Настройки</Link>
               <button className="mobile-menu-item" style={{ color: 'var(--error)', textAlign: 'left' }} onClick={() => { logout(); navigate('/'); setMobileOpen(false); }}>Выйти</button>

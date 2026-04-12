@@ -45,21 +45,41 @@ class DealService {
   }
 
   static async createDeal(data, clientId) {
+    const { kworkId, projectId, freelancerId, amount } = data;
+
+    // 🛡️ SECURITY: Verify freelancer exists and is valid
+    if (!freelancerId) throw new Error('Freelancer ID is required');
+    
     return await prisma.$transaction(async (tx) => {
+      // If buying a Kwork, verify it exists and belongs to the freelancer
+      if (kworkId) {
+        const kwork = await tx.kwork.findUnique({ where: { id: kworkId } });
+        if (!kwork) throw new Error('Kwork not found');
+        if (kwork.freelancerId !== freelancerId) throw new Error('Service owner mismatch');
+      }
+
+      // If hiring for a Project, verify the caller is the owner
+      if (projectId) {
+        const project = await tx.project.findUnique({ where: { id: projectId } });
+        if (!project) throw new Error('Project not found');
+        if (project.clientId !== clientId) throw new Error('Not the project owner');
+        
+        await tx.project.update({
+          where: { id: projectId },
+          data: { status: 'in_progress' },
+        });
+      }
+
       const deal = await tx.deal.create({
         data: {
-          ...data,
+          amount,
+          kworkId,
+          projectId,
+          freelancerId,
           clientId,
           status: 'active',
         },
       });
-
-      if (data.projectId) {
-        await tx.project.update({
-          where: { id: data.projectId },
-          data: { status: 'in_progress' },
-        });
-      }
 
       return deal;
     });

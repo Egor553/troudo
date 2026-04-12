@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "dev": "NODE_ENV=development nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,12 +18,16 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^8.0.5"
+    "nodemailer": "^8.0.5",
+    "socket.io": "^4.8.3",
+    "yookassa-sdk": "^0.0.13"
   },
   "devDependencies": {
-    "@prisma/client": "^7.7.0",
-    "prisma": "^7.7.0",
+    "@prisma/client": "^6.2.1",
+    "prisma": "^6.2.1",
     "zod": "^4.3.6"
   }
 }

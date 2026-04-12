@@ -43,8 +43,16 @@ const ProjectOffers = () => {
           amount: offer.price
         })
       });
-      // Redirect to the new deal page
-      navigate(`/order/${deal.id}`);
+      
+      // Request payment URL
+      const { checkoutUrl } = await apiFetch(`/payments/pay/${deal.id}`, { method: 'POST' });
+      
+      // Redirect to YooKassa
+      if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+      } else {
+          navigate(`/order/${deal.id}`);
+      }
     } catch (err) {
       alert('Ошибка при создании сделки: ' + err.message);
     }

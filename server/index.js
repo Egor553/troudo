@@ -1,12 +1,17 @@
 require('dotenv').config();
+const http = require('http');
 const app = require('./src/app');
+const { initSocket } = require('./src/utils/socket');
 
-const PORT = process.env.PORT || 5000;
+const server = http.createServer(app);
+const io = initSocket(server);
 
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0';
+
+server.listen(PORT, HOST, () => {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log(`🚀 Troudo API v2.0 is running on port ${PORT}`);
-  console.log(`📡 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log('🔗 Database: PostgreSQL (Prisma)');
+  console.log(`🚀 Troudo API Pro is running on http://${HOST}:${PORT}`);
+  console.log(`📡 WebSocket: Online`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 });

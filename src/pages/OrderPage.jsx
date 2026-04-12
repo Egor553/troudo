@@ -21,10 +21,28 @@ const OrderPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     fetchDeal();
   }, [id, apiFetch]);
+
+  useEffect(() => {
+    if (!deal) return;
+    const fetchMessages = async () => {
+        try {
+            const data = await apiFetch(`/chat/${id}`);
+            setMessages(data);
+        } catch (err) {
+            console.error('Chat fetch failed:', err);
+        }
+    };
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 5000); // Polling every 5 sec
+    return () => clearInterval(interval);
+  }, [id, deal, apiFetch]);
 
   const fetchDeal = async () => {
     try {
@@ -34,6 +52,24 @@ const OrderPage = () => {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim() || sending) return;
+    setSending(true);
+    try {
+        const msg = await apiFetch(`/chat/${id}`, {
+            method: 'POST',
+            body: JSON.stringify({ text: newMessage })
+        });
+        setMessages(prev => [...prev, msg]);
+        setNewMessage('');
+    } catch (err) {
+        alert('Не удалось отправить сообщение: ' + err.message);
+    } finally {
+        setSending(false);
     }
   };
 
@@ -85,10 +121,17 @@ const OrderPage = () => {
               </div>
             </div>
             <h1>{deal.project.title}</h1>
-            <div className="order-price-banner">
-                <DollarSign size={20} />
-                <span>Стоимость сделки: <strong>{deal.amount} ₽</strong></span>
+            <div className="order-header-badges">
                 <span className="safe-badge"><ShieldCheck size={14}/> Безопасная сделка</span>
+                {deal.paymentStatus === 'succeeded' ? (
+                    <span className="payment-badge success"><CheckCircle size={14}/> Оплачено</span>
+                ) : (
+                    <span className="payment-badge pending"><Clock size={14}/> Ожидание оплаты</span>
+                )}
+                <Link to={`/messages?dealId=${deal.id}`} className="messenger-link-badge">
+                    <MessageSquare size={14}/> Перейти в чат
+                </Link>
+            </div>
             </div>
           </header>
 
@@ -125,11 +168,41 @@ const OrderPage = () => {
 
           <section className="order-chat glass">
             <h3>Чат по заказу</h3>
-            <div className="chat-placeholder">
-                <MessageSquare size={48} />
-                <p>Здесь будет чат для обсуждения деталей и передачи файлов.</p>
-                <button className="btn-secondary" disabled>Открыть чат</button>
+            <div className="chat-messages-container">
+                {messages.length > 0 ? (
+                    messages.map((msg, i) => (
+                        <div key={msg.id || i} className={`chat-message-bubble ${msg.senderId === user.id ? 'own' : 'other'}`}>
+                            <div className="message-header">
+                                <span className="message-sender">{msg.sender.name}</span>
+                                <span className="message-time">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            <div className="message-text">{msg.text}</div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="chat-empty">
+                        <MessageSquare size={32} />
+                        <p>Начните обсуждение деталей заказа прямо здесь.</p>
+                    </div>
+                )}
             </div>
+            
+            <form className="chat-input-area" onSubmit={handleSendMessage}>
+                <textarea 
+                    placeholder="Напишите сообщение..." 
+                    value={newMessage}
+                    onChange={e => setNewMessage(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage(e);
+                        }
+                    }}
+                />
+                <button type="submit" className="btn-primary" disabled={sending || !newMessage.trim()}>
+                    {sending ? '...' : 'Отправить'}
+                </button>
+            </form>
           </section>
         </div>
 
