@@ -1,110 +1,103 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
-/**
- * AuthContext — глобальное состояние авторизации.
- * Теперь подключено к реальному backend API.
- */
-
 const AuthContext = createContext(null);
-
 const API_URL = 'http://localhost:5000/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('troudo_token') || null);
   const [loading, setLoading] = useState(true);
 
-  // При старте читаем сессию из localStorage
-  useEffect(() => {
+  // ── Глобальный хелпер для запросов ──────────────────────
+  const apiFetch = useCallback(async (endpoint, options = {}) => {
+    const url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(url, { ...options, headers });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Ошибка запроса');
+    return data;
+  }, [token]);
+
+  const refreshUser = useCallback(async () => {
+    if (!token) return;
     try {
-      const session = localStorage.getItem('troudo_session');
-      if (session) {
-        const parsed = JSON.parse(session);
-        if (parsed.token) {
-          // В реале: можно сделать /api/auth/me для проверки токена
-          setUser(parsed.user);
-        } else {
-          localStorage.removeItem('troudo_session');
-        }
-      }
-    } catch { }
-    setLoading(false);
-  }, []);
+      const userData = await apiFetch('/auth/me');
+      setUser(userData);
+      return userData;
+    } catch (err) {
+      console.error('Auth sync failed:', err.message);
+      logout();
+    }
+  }, [token, apiFetch, logout]);
+
+  // ── Синхронизация при загрузке ──────────────────────────
+  useEffect(() => {
+    setLoading(true);
+    refreshUser().finally(() => setLoading(false));
+  }, [refreshUser]);
 
   // ── РЕГИСТРАЦИЯ ──────────────────────────────────────────
   const register = useCallback(async ({ email, password }) => {
-    const res = await fetch(`${API_URL}/auth/register`, {
+    return await apiFetch('/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
-    
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Ошибка регистрации');
-    
-    return { email, token: data.dev_token }; // dev_token только для отладки, если почта не настроена
-  }, []);
+  }, [apiFetch]);
 
   // ── ПОДТВЕРДИТЬ EMAIL ─────────────────────────────────────
   const verifyEmail = useCallback(async (token) => {
-    const res = await fetch(`${API_URL}/auth/verify`, {
+    return await apiFetch('/auth/verify', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     });
-    
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Ошибка подтверждения');
-    
-    return true;
-  }, []);
+  }, [apiFetch]);
 
   // ── ВОЙТИ ────────────────────────────────────────────────
   const login = useCallback(async ({ email, password, remember }) => {
-    const res = await fetch(`${API_URL}/auth/login`, {
+    const data = await apiFetch('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, remember }),
     });
-    
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Ошибка входа');
 
-    localStorage.setItem('troudo_session', JSON.stringify({ 
-        user: data.user, 
-        token: data.token 
-    }));
+    localStorage.setItem('troudo_token', data.token);
+    setToken(data.token);
     setUser(data.user);
     return data.user;
-  }, []);
+  }, [apiFetch]);
 
   // ── ВЫЙТИ ────────────────────────────────────────────────
   const logout = useCallback(() => {
-    localStorage.removeItem('troudo_session');
+    localStorage.removeItem('troudo_token');
+    setToken(null);
     setUser(null);
   }, []);
 
-  // Остальные функции (forgot/reset) пока оставим заглушками или добавим позже
-  const forgotPassword = useCallback(async (email) => {
-    // В будущем: POST /api/auth/forgot
-    console.log('Forgot password for:', email);
-  }, []);
+  // ── ОБНОВИТЬ ПРОФИЛЬ (в т.ч. роль) ────────────────────────
+  const updateProfile = useCallback(async (updates) => {
+    const updatedUser = await apiFetch('/auth/profile', {
+      method: 'PATCH',
+      body: JSON.stringify(updates),
+    });
+    setUser(updatedUser);
+    return updatedUser;
+  }, [apiFetch]);
 
-  const resetPassword = useCallback(async (token, newPassword) => {
-    // В будущем: POST /api/auth/reset
-    console.log('Resetting password with token:', token);
-  }, []);
-
-  const switchRole = useCallback((role) => {
+  // ── ПЕРЕКЛЮЧИТЬ РОЛЬ ──────────────────────────────────────
+  const switchRole = useCallback(async (role) => {
     if (!user) return;
-    const updated = { ...user, activeRole: role };
-    setUser(updated);
-    const session = JSON.parse(localStorage.getItem('troudo_session') || '{}');
-    session.user = updated;
-    localStorage.setItem('troudo_session', JSON.stringify(session));
-  }, [user]);
+    await updateProfile({ activeRole: role });
+  }, [user, updateProfile]);
 
   const value = {
     user,
+    token,
     loading,
     isLoggedIn: !!user,
     isClient: user?.activeRole === 'client',
@@ -114,9 +107,10 @@ export function AuthProvider({ children }) {
     verifyEmail,
     login,
     logout,
-    forgotPassword,
-    resetPassword,
+    updateProfile,
     switchRole,
+    refreshUser,
+    apiFetch,
   };
 
   return (

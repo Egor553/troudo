@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Search, ChevronRight, MousePointer, CreditCard, 
-  ThumbsUp, Star, ArrowRight, TrendingUp
+  Search, ArrowRight, MousePointer, CreditCard, 
+  ThumbsUp, Star, TrendingUp, Layers
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const categories = [
   { name: 'Разработка и IT', icon: '💻', img: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=250&fit=crop', count: '48 000+' },
@@ -14,13 +15,6 @@ const categories = [
   { name: 'Бизнес и жизнь', icon: '💼', img: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&h=250&fit=crop', count: '11 000+' },
   { name: 'Тексты и переводы', icon: '✍️', img: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=250&fit=crop', count: '34 000+' },
   { name: 'Аудио, видео, съемка', icon: '🎥', img: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=250&fit=crop', count: '15 000+' },
-];
-
-const popularKworks = [
-  { id: 1, img: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=300&h=200&fit=crop', author: 'Alexdesign', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex', title: 'Профессиональный логотип', price: '1500' },
-  { id: 2, img: 'https://images.unsplash.com/photo-1547658719-da2b51169166?w=300&h=200&fit=crop', author: 'WebStudio', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=web', title: 'Сайт на React/Next.js', price: '5000' },
-  { id: 3, img: 'https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=300&h=200&fit=crop', author: 'TextPro', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=text', title: 'SEO-статья под ключ', price: '800' },
-  { id: 4, img: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=300&h=200&fit=crop', author: 'SocialMark', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=social', title: 'Ведение Instagram / TikTok', price: '3000' },
 ];
 
 const popularTags = ['Веб-дизайн', 'Логотип', 'SEO', 'Wordpress', 'Монтаж видео', 'Контент', 'React'];
@@ -33,6 +27,23 @@ const steps = [
 
 const Home = () => {
   const [query, setQuery] = useState('');
+  const [kworks, setKworks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { apiFetch } = useAuth();
+
+  useEffect(() => {
+    const fetchKworks = async () => {
+      try {
+        const data = await apiFetch('/kworks');
+        setKworks(data.slice(0, 4));
+      } catch (err) {
+        console.error('Home kworks fetch failed:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchKworks();
+  }, [apiFetch]);
 
   return (
     <div className="home-page fade-in">
@@ -79,18 +90,9 @@ const Home = () => {
               transition={{ duration: 0.7, delay: 0.1 }}
             >
               <div className="hero-stats-float glass">
-                <div className="hero-stat-item">
-                  <span className="hs-num gradient-text">5%</span>
-                  <span className="hs-label">Комиссия</span>
-                </div>
-                <div className="hero-stat-item">
-                  <span className="hs-num gradient-text">1ч</span>
-                  <span className="hs-label">Вывод</span>
-                </div>
-                <div className="hero-stat-item">
-                  <span className="hs-num gradient-text">100%</span>
-                  <span className="hs-label">Защита</span>
-                </div>
+                <div className="hero-stat-item"><span className="hs-num gradient-text">5%</span><span className="hs-label">Комиссия</span></div>
+                <div className="hero-stat-item"><span className="hs-num gradient-text">1ч</span><span className="hs-label">Вывод</span></div>
+                <div className="hero-stat-item"><span className="hs-num gradient-text">100%</span><span className="hs-label">Защита</span></div>
               </div>
               <img 
                 src="https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&h=500&fit=crop"
@@ -99,16 +101,6 @@ const Home = () => {
               />
             </motion.div>
           </div>
-        </div>
-      </section>
-
-      {/* ───── TRUST BAR ───── */}
-      <section className="trust-bar">
-        <div className="container trust-bar-inner">
-          <span className="trust-label">Нам доверяют:</span>
-          {['Сбер', 'Mail.ru', 'Яндекс', 'ВКонтакте', 'Авито', 'Ozon'].map(brand => (
-            <div key={brand} className="trust-brand">{brand}</div>
-          ))}
         </div>
       </section>
 
@@ -128,32 +120,6 @@ const Home = () => {
               </div>
             </Link>
           ))}
-        </div>
-      </section>
-
-      {/* ───── PLATFORM STATS ───── */}
-      <section className="platform-stats-section">
-        <div className="container platform-stats-inner glass">
-          <div className="platform-brand">
-            <span className="platform-logo gradient-text">Troudo</span>
-            <span className="platform-tagline">Честная биржа фриланса</span>
-          </div>
-          <div className="platform-stat">
-            <span className="ps-num">250 000+</span>
-            <span className="ps-label">Активных кворков</span>
-          </div>
-          <div className="platform-stat">
-            <span className="ps-num">3 200</span>
-            <span className="ps-label">Новых кворков за неделю</span>
-          </div>
-          <div className="platform-stat">
-            <span className="ps-num">18 500</span>
-            <span className="ps-label">Фрилансеров</span>
-          </div>
-          <div className="platform-stat">
-            <span className="ps-num">5%</span>
-            <span className="ps-label">Комиссия (лучшая на рынке)</span>
-          </div>
         </div>
       </section>
 
@@ -184,30 +150,32 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ───── POPULAR KWORKS ───── */}
+      {/* ───── POPULAR KWORKS (REAL DATA) ───── */}
       <section className="section-block container">
         <div className="section-header-row">
           <h2>Вдохновляйтесь проектами наших фрилансеров</h2>
           <Link to="/catalog" className="view-all-link">Смотреть все <ArrowRight size={16} /></Link>
         </div>
         <div className="portfolio-grid">
-          {popularKworks.map(kwork => (
-            <Link key={kwork.id} to={`/kwork/${kwork.id}`} className="portfolio-card glass">
-              <div className="portfolio-img">
-                <img src={kwork.img} alt={kwork.title} />
-              </div>
-              <div className="portfolio-info">
-                <div className="portfolio-author">
-                  <img src={kwork.avatar} alt={kwork.author} />
-                  <span>Автор: <strong>{kwork.author}</strong></span>
-                </div>
-                <div className="portfolio-bottom">
-                  <span className="portfolio-title">{kwork.title}</span>
-                  <span className="portfolio-price">от {kwork.price} ₽</span>
-                </div>
-              </div>
-            </Link>
-          ))}
+          {loading ? (
+             [1,2,3,4].map(i => <div key={i} className="portfolio-card glass loading-skeleton" style={{ height: '300px' }} />)
+          ) : kworks.length > 0 ? (
+            kworks.map(kwork => (
+                <Link key={kwork.id} to={`/kwork/${kwork.id}`} className="portfolio-card glass">
+                  <div className="portfolio-img">
+                    <Layers size={48} color="rgba(255,255,255,0.05)" style={{ margin: 'auto' }} />
+                  </div>
+                  <div className="portfolio-info">
+                    <div className="portfolio-bottom">
+                      <span className="portfolio-title">{kwork.title}</span>
+                      <span className="portfolio-price">от {kwork.price} ₽</span>
+                    </div>
+                  </div>
+                </Link>
+              ))
+          ) : (
+            <div className="empty-state glass w-full"><p>Здесь будут отображаться новые кворки.</p></div>
+          )}
         </div>
       </section>
 
@@ -223,25 +191,12 @@ const Home = () => {
               <div className="why-item">🛡️ <span>Эскроу — деньги под защитой</span></div>
               <div className="why-item">⭐ <span>Проверенные фрилансеры</span></div>
             </div>
-            <div className="why-btns">
-              <Link to="/catalog" className="btn-primary btn-lg">Найти исполнителя</Link>
-              <Link to="/register" className="btn-secondary btn-lg">Начать зарабатывать</Link>
-            </div>
           </div>
           <div className="why-visual">
             <div className="commission-compare">
-              <div className="compare-bar">
-                <span>Troudo</span>
-                <div className="bar-track"><div className="bar-fill troudo-bar">5%</div></div>
-              </div>
-              <div className="compare-bar">
-                <span>Kwork</span>
-                <div className="bar-track"><div className="bar-fill kwork-bar">20%</div></div>
-              </div>
-              <div className="compare-bar">
-                <span>Другие</span>
-                <div className="bar-track"><div className="bar-fill other-bar">25%</div></div>
-              </div>
+              <div className="compare-bar"><span>Troudo</span><div className="bar-track"><div className="bar-fill troudo-bar">5%</div></div></div>
+              <div className="compare-bar"><span>Kwork</span><div className="bar-track"><div className="bar-fill kwork-bar">20%</div></div></div>
+              <div className="compare-bar"><span>Другие</span><div className="bar-track"><div className="bar-fill other-bar">25%</div></div></div>
             </div>
           </div>
         </div>

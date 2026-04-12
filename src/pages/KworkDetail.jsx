@@ -1,98 +1,135 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Star, Check, Globe, MessageCircle, ArrowLeft } from 'lucide-react';
-
-const packages = [
-  { id: 'basic', name: 'Базовый', price: '1,000', period: '1 день', features: ['2 варианта', 'JPEG/PNG', '3 правки'] },
-  { id: 'optimal', name: 'Оптимальный', price: '3,000', period: '3 дня', features: ['5 вариантов', 'Исходники', 'Безлимитные правки', '3D визуализация'] },
-  { id: 'vip', name: 'VIP', price: '7,000', period: '7 дней', features: ['Все из Оптимального', 'Анимация логотипа', 'Брендбук', 'Приоритетная поддержка'] },
-];
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { 
+  Star, Clock, RefreshCw, ShieldCheck, 
+  ChevronRight, MessageSquare, ShoppingCart, 
+  ArrowLeft, Check, Layers
+} from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const KworkDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { apiFetch, user } = useAuth();
+  
+  const [kwork, setKwork] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activePackage, setActivePackage] = useState(0);
+
+  useEffect(() => {
+    const fetchKwork = async () => {
+      try {
+        const data = await apiFetch(`/kworks/${id}`);
+        setKwork(data);
+      } catch (err) {
+        console.error('Failed to fetch kwork:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchKwork();
+  }, [id, apiFetch]);
+
+  if (loading) return <div className="container" style={{ padding: '100px', textAlign: 'center' }}>Загрузка услуги...</div>;
+  if (!kwork) return <div className="container" style={{ padding: '100px', textAlign: 'center' }}>Услуга не найдена</div>;
+
+  const currentPkg = kwork.packages?.[activePackage] || { name: 'Базовый', price: kwork.price, period: 1 };
 
   return (
-    <div className="container">
-      <Link to="/catalog" className="back-link"><ArrowLeft size={18} /> К списку услуг</Link>
+    <div className="kwork-detail-page container fade-in">
+      <div className="breadcrumb">
+        <Link to="/catalog">Маркетплейс</Link>
+        <ChevronRight size={14} />
+        <span>{kwork.category}</span>
+      </div>
 
       <div className="kwork-detail-layout">
-        <main className="kwork-main">
-          <h1>Разработка современного логотипа для вашего бренда</h1>
+        {/* Main Content */}
+        <main className="kwork-detail-main">
+          <header className="kwork-header-section">
+            <button onClick={() => navigate(-1)} className="back-btn">
+                <ArrowLeft size={18} /> Назад
+            </button>
+            <h1>{kwork.title}</h1>
+            
+            <div className="kwork-owner-line">
+                <Link to={`/user/${kwork.freelancer.username}`} className="owner-avatar-link">
+                    {kwork.freelancer.avatar?.length > 4 ? (
+                        <img src={kwork.freelancer.avatar} alt={kwork.freelancer.name} />
+                    ) : (
+                        <div className="owner-avatar-emoji">{kwork.freelancer.avatar || '👤'}</div>
+                    )}
+                    <span>{kwork.freelancer.name}</span>
+                </Link>
+                <div className="owner-divider" />
+                <div className="owner-rating">
+                    <Star size={16} fill="var(--warning)" color="var(--warning)" />
+                    <strong>5.0</strong>
+                    <span>(0 отзывов)</span>
+                </div>
+                <div className="owner-divider" />
+                <span className="owner-orders-count">0 заказов в очереди</span>
+            </div>
+          </header>
 
           <div className="kwork-gallery glass">
-            <img src="https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&h=400&fit=crop" alt="Gallery main" />
-            <div className="gallery-thumbs">
-              <div className="thumb active"><img src="https://images.unsplash.com/photo-1626785774573-4b799315345d?w=100&h=80&fit=crop" alt="T1" /></div>
-              <div className="thumb"><img src="https://images.unsplash.com/photo-1626785774645-316279f57997?w=100&h=80&fit=crop" alt="T2" /></div>
-              <div className="thumb"><img src="https://images.unsplash.com/photo-1558655146-d09347e92766?w=100&h=80&fit=crop" alt="T3" /></div>
+            <div className="gallery-placeholder">
+                <Layers size={64} color="rgba(255,255,255,0.1)" />
+                <p>Изображения работы появятся здесь</p>
             </div>
           </div>
 
-          <div className="kwork-section">
-            <h2>Описание услуги</h2>
-            <p>Я создам для вас уникальный, запоминающийся и профессиональный логотип, который выделит ваш бренд на фоне конкурентов. В работе использую современные тренды дизайна и учитываю специфику вашей ниши.</p>
-            <ul>
-              <li>Индивидуальный подход к каждому проекту</li>
-              <li>Высокое разрешение и векторные форматы</li>
-              <li>Строгое соблюдение сроков</li>
-            </ul>
-          </div>
-
-          <div className="kwork-section">
-            <h2>Отзывы заказчиков</h2>
-            {[
-              { name: 'Сергей В.', seed: '10', text: 'Отличная работа! Логотип получился именно таким, как я и представлял.' },
-              { name: 'Наталья П.', seed: '20', text: 'Фрилансер работает быстро и качественно. Рекомендую!' },
-            ].map((r, i) => (
-              <div key={i} className="review-card glass">
-                <div className="review-header">
-                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${r.seed}`} alt="Avatar" className="avatar-small" />
-                  <div>
-                    <div className="review-author">{r.name}</div>
-                    <div className="rating"><Star size={12} fill="var(--warning)" color="var(--warning)" /> 5.0</div>
-                  </div>
-                </div>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '15px' }}>{r.text}</p>
-              </div>
-            ))}
-          </div>
+          <section className="kwork-description-section">
+            <h3>Описание услуги</h3>
+            <div className="description-text">
+                {kwork.description.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                ))}
+            </div>
+          </section>
         </main>
 
-        <aside className="kwork-sidebar">
-          <div className="packages-container glass">
-            <div className="package-tabs">
-              {packages.map(pkg => (
-                <div key={pkg.id} className={`package-tab ${pkg.id === 'optimal' ? 'active' : ''}`}>
-                  <h3>{pkg.name}</h3>
-                  <div className="pkg-price">{pkg.price} ₽</div>
-                </div>
-              ))}
-            </div>
-            <div className="package-content">
-              <div className="pkg-meta">
-                <span><Globe size={14} /> {packages[1].period}</span>
-              </div>
-              <ul className="pkg-features">
-                {packages[1].features.map(f => (
-                  <li key={f}><Check size={14} color="var(--accent-secondary)" /> {f}</li>
+        {/* Sidebar Pricing Card */}
+        <aside className="kwork-detail-sidebar">
+          <div className="pricing-card glass sticky">
+            <div className="pricing-tabs">
+                {(kwork.packages || []).map((pkg, i) => (
+                    <button 
+                        key={i} 
+                        className={`pkg-tab ${activePackage === i ? 'active' : ''}`}
+                        onClick={() => setActivePackage(i)}
+                    >
+                        {pkg.name}
+                    </button>
                 ))}
-              </ul>
-              <button className="btn-primary w-full">Заказать за {packages[1].price} ₽</button>
-              <button className="btn-secondary w-full"><MessageCircle size={16} /> Написать продавцу</button>
             </div>
-          </div>
+            
+            <div className="pricing-body">
+                <div className="price-line">
+                    <span className="price-label">Стоимость</span>
+                    <span className="price-value">{currentPkg.price} ₽</span>
+                </div>
+                
+                <p className="pkg-desc">{currentPkg.desc || 'Классический набор услуг для быстрого старта.'}</p>
+                
+                <div className="pkg-features">
+                    <div className="feature"><Clock size={16} /> <span>Срок выполнения: {currentPkg.period} дн.</span></div>
+                    <div className="feature"><RefreshCw size={16} /> <span>Доработки включены</span></div>
+                </div>
 
-          <div className="seller-card glass">
-            <div className="seller-info">
-              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=freelancer1" alt="Freelancer" className="seller-avatar" />
-              <div>
-                <div className="seller-name">Александр Д.</div>
-                <div className="seller-rank">⭐ Топ-продавец</div>
-              </div>
-            </div>
-            <div className="seller-stats">
-              <div><span>5.0</span>Рейтинг</div>
-              <div><span>500+</span>Заказов</div>
+                <div className="pricing-actions">
+                    <button className="btn-primary w-full" disabled={user?.id === kwork.freelancerId}>
+                        <ShoppingCart size={18} /> Купить за {currentPkg.price} ₽
+                    </button>
+                    <button className="btn-secondary w-full">
+                        <MessageSquare size={18} /> Связаться
+                    </button>
+                </div>
+
+                <div className="safe-deal-info">
+                    <ShieldCheck size={16} color="#10b981" />
+                    <span>Оплата через Маркетплейс гарантирует 100% возврат средств при невыполнении условий.</span>
+                </div>
             </div>
           </div>
         </aside>

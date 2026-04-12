@@ -12,6 +12,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import { ForgotPassword, ResetPassword } from './pages/PasswordReset';
 import ClientDashboard from './pages/ClientDashboard';
 import CreateOrder from './pages/CreateOrder';
+import ProjectOffers from './pages/ProjectOffers';
 import FreelancerApplication from './pages/FreelancerApplication';
 import FreelancerDashboard from './pages/FreelancerDashboard';
 import Catalog from './pages/Catalog';
@@ -64,6 +65,7 @@ function App() {
             {/* Client routes */}
             <Route path="/dashboard" element={<PrivateRoute><ClientDashboard /></PrivateRoute>} />
             <Route path="/create-order" element={<PrivateRoute><CreateOrder /></PrivateRoute>} />
+            <Route path="/project/:id/offers" element={<PrivateRoute requiredRole="client"><ProjectOffers /></PrivateRoute>} />
             <Route path="/become-freelancer" element={<PrivateRoute><FreelancerApplication /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 

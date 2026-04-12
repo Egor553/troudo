@@ -23,10 +23,22 @@ const Settings = () => {
   const [showPass, setShowPass] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    const formData = new FormData(e.target);
+    const updates = {
+      name: formData.get('name'),
+      specialization: formData.get('specialization'),
+      bio: formData.get('bio'),
+    };
+    
+    try {
+      await updateProfile(updates);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (err) {
+      alert('Ошибка при сохранении: ' + err.message);
+    }
   };
 
   const selectEmoji = (emoji) => {
@@ -90,15 +102,15 @@ const Settings = () => {
               <form onSubmit={handleSave} className="settings-form">
                 <div className="form-group">
                   <label>Имя (отображается публично)</label>
-                  <input type="text" defaultValue={user?.name || ''} />
+                  <input type="text" name="name" defaultValue={user?.name || ''} />
                 </div>
                 <div className="form-group">
                   <label>Заголовок профиля</label>
-                  <input type="text" defaultValue={user?.specialization || 'Разработчик'} />
+                  <input type="text" name="specialization" defaultValue={user?.specialization || ''} />
                 </div>
                 <div className="form-group">
                   <label>О себе</label>
-                  <textarea rows="5" defaultValue={user?.bio || ''} />
+                  <textarea rows="5" name="bio" defaultValue={user?.bio || ''} />
                 </div>
                 
                 <button type="submit" className={`btn-primary ${saved ? 'btn-saved' : ''}`}>
