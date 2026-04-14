@@ -20,9 +20,11 @@ class PaymentController {
    */
   async handleWebhook(req, res) {
     try {
-      // Get IP to verify source
+      // Get IP and signature for security
       const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      await PaymentService.handleWebhook(req.body, clientIp);
+      const signature = req.headers['x-yookassa-signature'];
+
+      await PaymentService.handleWebhook(req.body, clientIp, signature, req.rawBody);
       res.status(200).send('OK');
     } catch (err) {
       console.error('Webhook error:', err);

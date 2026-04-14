@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, Bell, Wallet, ChevronDown, Menu, X,
   User, Settings, LogOut, Layers, MessageCircle,
-  ShoppingBag, Building2, Plus, RefreshCw
+  ShoppingBag, Building2, Plus, RefreshCw, ShoppingCart
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,6 +27,13 @@ const Header = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // Body scroll lock
+  useEffect(() => {
+    if (mobileOpen) document.body.style.overflow = 'hidden';
+    else document.body.style.overflow = 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [mobileOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -228,26 +235,64 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="mobile-menu glass">
-          {isLoggedIn ? (
-            <>
-              <Link to={`/user/${user.username}`} className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Мой профиль</Link>
-              <Link to="/freelancer/dashboard" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Кворки</Link>
-              <Link to="/orders" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Заказы</Link>
-              <Link to="/catalog" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Биржа</Link>
-              <Link to="/settings" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Настройки</Link>
-              <button className="mobile-menu-item" style={{ color: 'var(--error)', textAlign: 'left' }} onClick={() => { logout(); navigate('/'); setMobileOpen(false); }}>Выйти</button>
-            </>
-          ) : (
-            <>
-              <Link to="/catalog" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Каталог</Link>
-              <Link to="/login" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>Вход</Link>
-              <Link to="/register" className="btn-primary w-full" onClick={() => setMobileOpen(false)}>Регистрация</Link>
-            </>
-          )}
-        </div>
+        <>
+          <div className="mobile-menu-overlay" onClick={() => setMobileOpen(false)} />
+          <div className="mobile-menu glass">
+            <div className="mobile-menu-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <span className="logo" style={{ fontSize: '20px' }}><span className="gradient-text">Troudo</span></span>
+                <button onClick={() => setMobileOpen(false)}><X size={24} /></button>
+            </div>
+            
+            {isLoggedIn ? (
+              <>
+                <Link to={`/user/${user.username}`} className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <User size={20} /> Мой профиль
+                </Link>
+                <Link to="/freelancer/dashboard" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <Layers size={20} /> Мои кворки
+                </Link>
+                <Link to="/orders" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <ShoppingBag size={20} /> Мои заказы
+                </Link>
+                <Link to="/catalog" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <ShoppingCart size={20} /> Услуги
+                </Link>
+                <Link to="/exchange" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <Building2 size={20} /> Биржа
+                </Link>
+                <Link to="/settings" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <Settings size={20} /> Настройки
+                </Link>
+                <div className="dropdown-divider" style={{ margin: '15px 0' }} />
+                <button 
+                  className="mobile-menu-item" 
+                  style={{ color: 'var(--error)' }} 
+                  onClick={() => { logout(); navigate('/'); setMobileOpen(false); }}
+                >
+                  <LogOut size={20} /> Выйти
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/catalog" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <ShoppingCart size={20} /> Услуги
+                </Link>
+                <Link to="/exchange" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <Building2 size={20} /> Биржа
+                </Link>
+                <div className="dropdown-divider" style={{ margin: '15px 0' }} />
+                <Link to="/login" className="mobile-menu-item" onClick={() => setMobileOpen(false)}>
+                  <LogOut size={20} /> Вход
+                </Link>
+                <Link to="/register" className="btn-primary w-full" style={{ marginTop: '10px' }} onClick={() => setMobileOpen(false)}>
+                  Регистрация
+                </Link>
+              </>
+            )}
+          </div>
+        </>
       )}
     </>
   );

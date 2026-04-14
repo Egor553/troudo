@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import heroImg from '../assets/hero.png';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -95,7 +96,7 @@ const Home = () => {
                 <div className="hero-stat-item"><span className="hs-num gradient-text">100%</span><span className="hs-label">Защита</span></div>
               </div>
               <img 
-                src="https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?w=500&h=500&fit=crop"
+                src={heroImg}
                 alt="Freelancer"
                 className="hero-freelancer-img"
               />

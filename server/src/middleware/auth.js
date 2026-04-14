@@ -1,11 +1,17 @@
 const jwt = require('jsonwebtoken');
 const prisma = require('../utils/prisma');
+const { isTokenBlacklisted } = require('../utils/blacklist');
 
 const authenticateToken = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) return res.status(401).json({ message: 'Токен отсутствует' });
+
+    // 🔒 Check blacklist (Production security)
+    if (await isTokenBlacklisted(token)) {
+        return res.status(401).json({ message: 'Сессия отозвана' });
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);

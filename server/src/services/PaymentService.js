@@ -1,4 +1,4 @@
-const { YooCheckout } = require('yookassa-sdk');
+const { YooCheckout } = require('@a2seven/yoo-checkout');
 const prisma = require('../utils/prisma');
 const ChatService = require('./ChatService');
 const { v4: uuidv4 } = require('uuid');
@@ -23,7 +23,7 @@ class PaymentService {
     if (deal.clientId !== userId) throw new Error('Вы не являетесь заказчиком этой сделки');
 
     const idempotenceKey = uuidv4();
-    
+
     // Формируем запрос к ЮKassa
     const createPayload = {
       amount: {
@@ -58,49 +58,81 @@ class PaymentService {
   /**
    * Обработать уведомление от ЮKassa (Webhook)
    */
-  async handleWebhook(notification, clientIp) {
+  async handleWebhook(notification, clientIp, signature, rawBody) {
+    const logger = require('../utils/logger');
+    const crypto = require('crypto');
+
+    // 🛡️ SECURITY: Verify Signature (HMAC-SHA256 as requested)
+    if (process.env.NODE_ENV === 'production') {
+      if (!signature || !rawBody) {
+        logger.error(`🛑 Rejected unsigned webhook from IP: ${clientIp}`);
+        throw new Error('MISSING_SIGNATURE');
+      }
+
+      const hmac = crypto.createHmac('sha256', process.env.YOOKASSA_WEBHOOK_SECRET);
+      hmac.update(rawBody);
+      const expectedSignature = hmac.digest('hex');
+
+      if (signature !== expectedSignature) {
+        logger.error(`🛑 Webhook signature mismatch from IP: ${clientIp}`);
+        throw new Error('INVALID_SIGNATURE');
+      }
+    }
+
     // 🛡️ SECURITY: Verify sender IP (standard for YooKassa)
     const allowedIps = [
-        '185.71.76.', '185.71.77.', '77.75.153.', '77.75.156.'
+      '185.71.76.', '185.71.77.', '77.75.153.', '77.75.156.'
     ];
 
     const isMatch = allowedIps.some(range => clientIp.startsWith(range));
     if (!isMatch && process.env.NODE_ENV === 'production') {
-        console.warn(`🛑 Blocked suspicious webhook attempt from IP: ${clientIp}`);
-        throw new Error('UNAUTHORIZED_SOURCE');
+      logger.warn(`🛑 Webhook source IP warning: ${clientIp} (continuing due to valid signature)`);
     }
 
     const { event, object } = notification;
+    logger.info(`🔔 YooKassa Webhook: ${event} for ID ${object.id}`);
 
     if (event === 'payment.succeeded') {
       const paymentId = object.id;
       const dealId = object.metadata.dealId;
+
+      const deal = await prisma.deal.findUnique({ where: { id: dealId } });
+      if (!deal) {
+        logger.error(`❌ Webhook error: Deal ${dealId} not found`);
+        return true; // Return true to ack YooKassa even if internal error
+      }
+
+      // 🛡️ IDEMPOTENCY: Check if already processed
+      if (deal.paymentStatus === 'succeeded' || deal.status === 'active') {
+        logger.info(`⏭️ Skipping already processed webhook for deal ${dealId}`);
+        return true;
+      }
 
       // Обновляем статус сделки в БД
       const updatedDeal = await prisma.deal.update({
         where: { id: dealId },
         data: {
           paymentStatus: 'succeeded',
-          status: 'active' 
+          status: 'active'
         }
       });
 
       // 💬 Отправляем системное сообщение в чат
       try {
-          await ChatService.sendMessage(dealId, updatedDeal.clientId, '✅ Оплата получена! Сделка активирована. Вы можете начать обсуждение деталей заказа.');
+        await ChatService.sendMessage(dealId, updatedDeal.clientId, '✅ Оплата получена! Сделка активирована. Вы можете начать обсуждение деталей заказа.');
       } catch (err) {
-          console.error('Ошибка при отправке системного сообщения:', err.message);
+        logger.error('Ошибка при отправке системного сообщения:', err);
       }
 
-      console.log(`✅ Платеж ${paymentId} для сделки ${dealId} успешно подтвержден.`);
+      logger.info(`✅ Платеж ${paymentId} для сделки ${dealId} успешно подтвержден.`);
     }
 
     if (event === 'payment.canceled') {
-        const dealId = object.metadata.dealId;
-        await prisma.deal.update({
-            where: { id: dealId },
-            data: { paymentStatus: 'canceled' }
-        });
+      const dealId = object.metadata.dealId;
+      await prisma.deal.update({
+        where: { id: dealId },
+        data: { paymentStatus: 'canceled' }
+      }).catch(e => logger.error('Error updating canceled payment:', e));
     }
 
     return true;

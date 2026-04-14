@@ -19,7 +19,7 @@ export const SocketProvider = ({ children }) => {
         }
 
         // Initialize socket with token
-        const newSocket = io('http://93.77.162.174', {
+        const newSocket = io('/', {
             auth: { token }
         });
 

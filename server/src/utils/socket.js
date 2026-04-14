@@ -1,5 +1,6 @@
 const { Server } = require('socket.io');
 const jwt = require('jsonwebtoken');
+const logger = require('./logger');
 
 let io;
 const userSockets = new Map(); // userId -> socketId
@@ -7,7 +8,7 @@ const userSockets = new Map(); // userId -> socketId
 const initSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: "*", // Adjust for production
+            origin: process.env.FRONTEND_URL || "http://localhost:5173",
             methods: ["GET", "POST"]
         }
     });
@@ -27,7 +28,7 @@ const initSocket = (server) => {
     });
 
     io.on('connection', (socket) => {
-        console.log(`🔌 User connected: ${socket.userId} (${socket.id})`);
+        logger.info(`🔌 User connected: ${socket.userId} (${socket.id})`);
         userSockets.set(socket.userId, socket.id);
 
         // Broadcast online status
@@ -35,7 +36,7 @@ const initSocket = (server) => {
 
         socket.on('join_chat', (dealId) => {
             socket.join(dealId);
-            console.log(`💬 User ${socket.userId} joined room: ${dealId}`);
+            logger.info(`💬 User ${socket.userId} joined room: ${dealId}`);
         });
 
         socket.on('typing_start', (dealId) => {
@@ -47,7 +48,7 @@ const initSocket = (server) => {
         });
 
         socket.on('disconnect', () => {
-            console.log(`🔌 User disconnected: ${socket.userId}`);
+            logger.info(`🔌 User disconnected: ${socket.userId}`);
             userSockets.delete(socket.userId);
             socket.broadcast.emit('user_offline', socket.userId);
         });

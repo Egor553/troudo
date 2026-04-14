@@ -11,6 +11,7 @@ const CreateKwork = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Race condition fix
     setLoading(true);
     setError('');
 

@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const PaymentController = require('../controllers/paymentController');
-const { protect } = require('../middleware/authMiddleware');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @route POST /api/payments/pay/:dealId
  * @desc Инициировать оплату заказа (Кворка или Проекта)
  * @access Private
  */
-router.post('/pay/:dealId', protect, PaymentController.createPayment);
+router.post('/pay/:dealId', authenticateToken, PaymentController.createPayment);
 
 /**
  * @route POST /api/payments/webhook

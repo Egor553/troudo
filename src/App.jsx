@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import Home from './pages/Home';
@@ -48,56 +49,58 @@ function GuestRoute({ children }) {
 
 function App() {
   return (
-    <AuthProvider>
-      <SocketProvider>
-        <Router>
-          <div className="app-container">
-            <Header />
-            <main className="main-content">
-              <Routes>
-                {/* Public */}
-                <Route path="/" element={<Home />} />
-                <Route path="/catalog" element={<Catalog />} />
-                <Route path="/exchange" element={<Exchange />} />
-                <Route path="/orders" element={<OrdersHistory />} />
-                <Route path="/messages" element={<PrivateRoute><Messenger /></PrivateRoute>} />
-                <Route path="/kwork/:id" element={<KworkDetail />} />
-                <Route path="/user/:username" element={<FreelancerProfile />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <SocketProvider>
+          <Router>
+            <div className="app-container">
+              <Header />
+              <main className="main-content">
+                <Routes>
+                  {/* Public */}
+                  <Route path="/" element={<Home />} />
+                  <Route path="/catalog" element={<Catalog />} />
+                  <Route path="/exchange" element={<Exchange />} />
+                  <Route path="/orders" element={<OrdersHistory />} />
+                  <Route path="/messages" element={<PrivateRoute><Messenger /></PrivateRoute>} />
+                  <Route path="/kwork/:id" element={<KworkDetail />} />
+                  <Route path="/user/:username" element={<FreelancerProfile />} />
 
-                {/* Auth (только для гостей) */}
-                <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
-                <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/verify" element={<VerifyEmail />} />
+                  {/* Auth (только для гостей) */}
+                  <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
+                  <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/verify" element={<VerifyEmail />} />
 
-                {/* Client routes */}
-                <Route path="/dashboard" element={<PrivateRoute><ClientDashboard /></PrivateRoute>} />
-                <Route path="/create-order" element={<PrivateRoute><CreateOrder /></PrivateRoute>} />
-                <Route path="/project/:id/offers" element={<PrivateRoute requiredRole="client"><ProjectOffers /></PrivateRoute>} />
-                <Route path="/become-freelancer" element={<PrivateRoute><FreelancerApplication /></PrivateRoute>} />
-                <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+                  {/* Client routes */}
+                  <Route path="/dashboard" element={<PrivateRoute><ClientDashboard /></PrivateRoute>} />
+                  <Route path="/create-order" element={<PrivateRoute><CreateOrder /></PrivateRoute>} />
+                  <Route path="/project/:id/offers" element={<PrivateRoute requiredRole="client"><ProjectOffers /></PrivateRoute>} />
+                  <Route path="/become-freelancer" element={<PrivateRoute><FreelancerApplication /></PrivateRoute>} />
+                  <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 
-                {/* Freelancer routes */}
-                <Route path="/freelancer/dashboard" element={<PrivateRoute><FreelancerDashboard /></PrivateRoute>} />
-                <Route path="/freelancer/create-kwork" element={<PrivateRoute><CreateKwork /></PrivateRoute>} />
+                  {/* Freelancer routes */}
+                  <Route path="/freelancer/dashboard" element={<PrivateRoute><FreelancerDashboard /></PrivateRoute>} />
+                  <Route path="/freelancer/create-kwork" element={<PrivateRoute><CreateKwork /></PrivateRoute>} />
 
-                {/* Deals */}
-                <Route path="/order/:id" element={<PrivateRoute><OrderPage /></PrivateRoute>} />
-                <Route path="/dispute/:id" element={<PrivateRoute><DisputePage /></PrivateRoute>} />
+                  {/* Deals */}
+                  <Route path="/order/:id" element={<PrivateRoute><OrderPage /></PrivateRoute>} />
+                  <Route path="/dispute/:id" element={<PrivateRoute><DisputePage /></PrivateRoute>} />
 
-                {/* Admin */}
-                <Route path="/admin" element={<PrivateRoute requiredRole="admin"><AdminPanel /></PrivateRoute>} />
+                  {/* Admin */}
+                  <Route path="/admin" element={<PrivateRoute requiredRole="admin"><AdminPanel /></PrivateRoute>} />
 
-                {/* 404 */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
-      </SocketProvider>
-    </AuthProvider>
+                  {/* 404 */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </Router>
+        </SocketProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

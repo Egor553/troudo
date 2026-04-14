@@ -13,21 +13,30 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@a2seven/yoo-checkout": "^1.1.1",
+    "@aws-sdk/client-s3": "^3.1030.0",
+    "@aws-sdk/lib-storage": "^3.1030.0",
+    "@prisma/client": "^6.2.1",
     "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.2",
+    "bull": "^4.16.5",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.2",
     "helmet": "^8.1.0",
+    "ioredis": "^5.10.1",
+    "joi": "^18.1.2",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
     "nodemailer": "^8.0.5",
     "socket.io": "^4.8.3",
-    "yookassa-sdk": "^0.0.13"
+    "uuid": "^11.0.0",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@prisma/client": "^6.2.1",
-    "prisma": "^6.2.1",
-    "zod": "^4.3.6"
+    "prisma": "^6.2.1"
   }
 }

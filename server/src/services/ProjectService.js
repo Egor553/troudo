@@ -2,26 +2,41 @@ const prisma = require('../utils/prisma');
 
 class ProjectService {
   static async getAll(filters) {
-    const { category, q } = filters;
-    const projects = await prisma.project.findMany({
-      where: {
-        AND: [
-          category && category !== 'Все категории' ? { category } : {},
-          q ? {
-            OR: [
-              { title: { contains: q, mode: 'insensitive' } },
-              { description: { contains: q, mode: 'insensitive' } },
-            ],
-          } : {},
-        ],
-      },
-      include: {
-        _count: { select: { offers: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    const { category, q, page = 1, limit = 20 } = filters;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const take = parseInt(limit);
 
-    return projects.map(p => ({ ...p, offersCount: p._count.offers }));
+    const where = {
+      AND: [
+        category && category !== 'Все категории' ? { category } : {},
+        q ? {
+          OR: [
+            { title: { contains: q, mode: 'insensitive' } },
+            { description: { contains: q, mode: 'insensitive' } },
+          ],
+        } : {},
+      ],
+    };
+
+    const [total, projects] = await Promise.all([
+      prisma.project.count({ where }),
+      prisma.project.findMany({
+        where,
+        include: {
+          _count: { select: { offers: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      })
+    ]);
+
+    return {
+      data: projects.map(p => ({ ...p, offersCount: p._count.offers })),
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / take)
+    };
   }
 
   static async getById(id) {
@@ -36,12 +51,12 @@ class ProjectService {
   static async create(data, clientId) {
     const { title, description, budget, category } = data;
     return await prisma.project.create({
-      data: { 
-        title, 
-        description, 
-        budget, 
-        category, 
-        clientId 
+      data: {
+        title,
+        description,
+        budget,
+        category,
+        clientId
       },
     });
   }
@@ -65,11 +80,11 @@ class ProjectService {
     if (!project) throw new Error('NOT_FOUND');
 
     return await prisma.offer.create({
-      data: { 
-        price, 
-        message, 
-        projectId, 
-        freelancerId 
+      data: {
+        price,
+        message,
+        projectId,
+        freelancerId
       },
     });
   }

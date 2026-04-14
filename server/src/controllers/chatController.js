@@ -11,7 +11,7 @@ const getChatList = async (req, res) => {
 
 const getMessages = async (req, res) => {
     try {
-        const messages = await ChatService.getMessages(req.params.dealId, req.user.id);
+        const messages = await ChatService.getMessages(req.params.dealId, req.user.id, req.query);
         res.json(messages);
     } catch (err) {
         const status = err.message === 'FORBIDDEN' ? 403 : err.message === 'NOT_FOUND' ? 404 : 500;

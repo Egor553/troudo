@@ -29,6 +29,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent double trigger (Race condition fix)
     setError('');
 
     if (form.password !== form.password2) { setError('Пароли не совпадают'); return; }
@@ -47,41 +48,69 @@ const Register = () => {
     }
   };
 
+  const handleResend = async () => {
+    setResendStatus('loading');
+    try {
+      await apiFetch('/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email: success.email })
+      });
+      setResendStatus('success');
+      setTimeout(() => setResendStatus('none'), 3000);
+    } catch (err) {
+      setError(err.message);
+      setResendStatus('none');
+    }
+  };
+
   // ── Шаг 6: письмо отправлено ────────────────────────────
   if (success) {
     return (
       <div className="auth-page">
-        <div className="auth-card glass email-sent-card">
-          <div className="email-sent-icon">✉️</div>
-          <h2>Проверьте вашу почту</h2>
-          <p>
-            Мы отправили письмо на <strong>{success.email}</strong>.<br />
-            Перейдите по ссылке в письме, чтобы подтвердить регистрацию.
+        <div className="auth-card glass email-sent-card fade-in">
+          <div className="email-sent-icon-wrap">
+            <div className="email-sent-icon">✉️</div>
+            <div className="email-sent-ring"></div>
+          </div>
+          <h2>Проверьте почту</h2>
+          <p className="email-sent-desc">
+            Мы отправили ссылку для подтверждения на <br />
+            <strong className="gradient-text">{success.email}</strong>
           </p>
-          <div className="email-hint glass">
-            <p>⏱ Ссылка действительна 24 часа</p>
-            <p>📁 Проверьте папку «Спам», если письма нет</p>
+
+          <div className="email-steps glass">
+            <div className="e-step">
+              <span className="e-num">1</span>
+              <span>Найдите письмо от <b>Troudo Team</b></span>
+            </div>
+            <div className="e-step">
+              <span className="e-num">2</span>
+              <span>Нажмите на кнопку подтверждения</span>
+            </div>
           </div>
 
-          {/* DEV-режим: показываем ссылку прямо на странице */}
-          <div className="dev-hint glass">
-            <p style={{ fontSize: '12px', color: 'var(--warning)', marginBottom: '8px' }}>
-              🛠 DEV: кликните ссылку вместо письма
-            </p>
-            <Link
-              to={`/verify?token=${success.token}`}
-              className="btn-primary w-full"
-              style={{ justifyContent: 'center' }}
+          {resendStatus === 'success' ? (
+            <div className="resend-success animate-bounce-in">
+              <CheckCircle size={16} /> Ссылка отправлена повторно!
+            </div>
+          ) : (
+            <button
+              className="resend-btn-alt"
+              onClick={handleResend}
+              disabled={resendStatus === 'loading'}
             >
-              Перейти к подтверждению →
-            </Link>
-          </div>
+              {resendStatus === 'loading' ? <Loader size={16} className="spin" /> : <RefreshCw size={16} />}
+              Не пришло письмо? Отправить еще раз
+            </button>
+          )}
+
+          <div className="auth-divider"><span>или</span></div>
 
           <button
-            className="resend-btn"
+            className="btn-secondary w-full"
             onClick={() => setSuccess(null)}
           >
-            Зарегистрироваться с другим email
+            Использовать другой Email
           </button>
         </div>
       </div>
@@ -211,8 +240,12 @@ const Register = () => {
 
         <div className="auth-divider"><span>или войти через</span></div>
         <div className="social-auth">
-          <button className="social-btn-auth">🔵 Google</button>
-          <button className="social-btn-auth">💙 ВКонтакте</button>
+          <button className="social-btn-auth">
+            <span style={{ color: '#4285F4', fontSize: '18px', fontWeight: 'bold' }}>G</span> Google
+          </button>
+          <button className="social-btn-auth">
+            <span style={{ color: '#0077FF', fontSize: '18px', fontWeight: 'bold' }}>VK</span> ВКонтакте
+          </button>
         </div>
 
         <p className="auth-footer">

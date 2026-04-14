@@ -2,7 +2,7 @@ const DealService = require('../services/DealService');
 
 const getAllDeals = async (req, res) => {
   try {
-    const deals = await DealService.getDealsForUser(req.user.id);
+    const deals = await DealService.getDealsForUser(req.user.id, req.query);
     res.json(deals);
   } catch (err) {
     res.status(500).json({ message: 'Ошибка при получении сделок: ' + err.message });
@@ -33,9 +33,9 @@ const updateDealStatus = async (req, res) => {
     const updatedDeal = await DealService.updateStatus(req.params.id, req.body.status, req.user.id);
     res.json(updatedDeal);
   } catch (err) {
-    const status = err.message.includes('INVALID_TRANSITION') ? 400 : 
-                   err.message.includes('ONLY_') ? 403 : 
-                   err.message === 'NOT_FOUND' ? 404 : 500;
+    const status = err.message.includes('INVALID_TRANSITION') ? 400 :
+      err.message.includes('ONLY_') ? 403 :
+        err.message === 'NOT_FOUND' ? 404 : 500;
     res.status(status).json({ message: err.message });
   }
 };

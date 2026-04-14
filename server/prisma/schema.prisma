@@ -33,9 +33,13 @@ model User {
   roles          Role[]   @default([client, freelancer])
   bio            String?
   specialization String?
-  lastSeen       DateTime @default(now())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  isVerified            Boolean   @default(false)
+  verificationToken     String?   @unique
+  verificationExpires   DateTime?
+  lastVerificationSent  DateTime?
+  lastSeen              DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   projects          Project[]
   kworks            Kwork[]

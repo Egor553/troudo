@@ -21,9 +21,10 @@ const CreateOrder = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (loading) return; // Prevent double submission
     if (!isClient) {
-        setError('Только заказчики могут публиковать проекты. Пожалуйста, переключите роль.');
-        return;
+      setError('Только заказчики могут публиковать проекты. Пожалуйста, переключите роль.');
+      return;
     }
 
     setLoading(true);
@@ -68,12 +69,12 @@ const CreateOrder = () => {
           <form onSubmit={handleSubmit} className="order-form">
             <div className="form-group">
               <label>Как называется ваша задача?</label>
-              <input 
-                type="text" 
-                placeholder="Например: Нужно создать логотип для кофейни" 
+              <input
+                type="text"
+                placeholder="Например: Нужно создать логотип для кофейни"
                 required
                 value={formData.title}
-                onChange={e => setFormData({...formData, title: e.target.value})}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
               />
               <span className="input-hint">Кратко и понятно — так вы получите больше откликов</span>
             </div>
@@ -81,33 +82,33 @@ const CreateOrder = () => {
             <div className="form-row">
               <div className="form-group">
                 <label>Выберите категорию</label>
-                <select 
-                  value={formData.category} 
-                  onChange={e => setFormData({...formData, category: e.target.value})}
+                <select
+                  value={formData.category}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
                 >
                   {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                 </select>
               </div>
               <div className="form-group">
                 <label>Ваш бюджет (₽)</label>
-                <input 
-                  type="number" 
-                  placeholder="Например: 5000" 
+                <input
+                  type="number"
+                  placeholder="Например: 5000"
                   required
                   value={formData.budget}
-                  onChange={e => setFormData({...formData, budget: e.target.value})}
+                  onChange={e => setFormData({ ...formData, budget: e.target.value })}
                 />
               </div>
             </div>
 
             <div className="form-group">
               <label>Подробное описание задачи</label>
-              <textarea 
-                rows="8" 
-                placeholder="Расскажите подробнее: что нужно сделать, какие сроки, есть ли техническое задание..." 
+              <textarea
+                rows="8"
+                placeholder="Расскажите подробнее: что нужно сделать, какие сроки, есть ли техническое задание..."
                 required
                 value={formData.description}
-                onChange={e => setFormData({...formData, description: e.target.value})}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
 

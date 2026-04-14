@@ -132,7 +132,6 @@ const OrderPage = () => {
                     <MessageSquare size={14}/> Перейти в чат
                 </Link>
             </div>
-            </div>
           </header>
 
           <section className="order-timeline glass">

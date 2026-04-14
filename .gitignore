@@ -10,6 +10,7 @@ dist-ssr
 .idea
 
 # Backend SECRETS (VERY IMPORTANT)
+.env
 server/.env
 server/database.json
 server/node_modules

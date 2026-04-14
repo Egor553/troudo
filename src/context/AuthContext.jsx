@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
-const API_URL = 'http://93.77.162.174/api';
+const API_URL = '/api';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -19,7 +19,28 @@ export function AuthProvider({ children }) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const res = await fetch(url, { ...options, headers });
+    let res;
+    try {
+      res = await fetch(url, { ...options, headers });
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        throw new Error('Нет подключения к серверу. Проверьте интернет.');
+      }
+      throw err;
+    }
+
+    // Handle 204 No Content
+    if (res.status === 204) return null;
+
+    if (res.status === 401) {
+      logout();
+      throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+    }
+
+    if (res.status === 429) {
+      throw new Error('Слишком много запросов. Пожалуйста, подождите минуту.');
+    }
+
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Ошибка запроса');
     return data;
@@ -66,6 +87,14 @@ export function AuthProvider({ children }) {
     });
   }, [apiFetch]);
 
+  // ── ПЕРЕОТПРАВИТЬ ПОДТВЕРЖДЕНИЕ ───────────────────────────
+  const resendVerification = useCallback(async (email) => {
+    return await apiFetch('/auth/resend-verify', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }, [apiFetch]);
+
   // ── ВОЙТИ ────────────────────────────────────────────────
   const login = useCallback(async ({ email, password, remember }) => {
     const data = await apiFetch('/auth/login', {
@@ -105,6 +134,7 @@ export function AuthProvider({ children }) {
     isAdmin: user?.roles?.includes('admin'),
     register,
     verifyEmail,
+    resendVerification,
     login,
     logout,
     updateProfile,
