@@ -1,208 +1,132 @@
-import React, { useState, useEffect } from 'react';
-import heroImg from '../assets/hero.png';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { 
-  Search, ArrowRight, MousePointer, CreditCard, 
-  ThumbsUp, Star, TrendingUp, Layers
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React from 'react';
+import Navbar from '../components/layout/Navbar';
+import ServiceCard from '../components/ui/ServiceCard';
+import { ArrowLeftRight, ShieldCheck, Zap, Star } from 'lucide-react';
 
-const categories = [
-  { name: 'Разработка и IT', icon: '💻', img: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=250&fit=crop', count: '48 000+' },
-  { name: 'Дизайн', icon: '🎨', img: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop', count: '62 000+' },
-  { name: 'SEO и трафик', icon: '📈', img: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop', count: '29 000+' },
-  { name: 'Соцсети и маркетинг', icon: '📱', img: 'https://images.unsplash.com/photo-1611926653458-09294b3142bf?w=400&h=250&fit=crop', count: '18 000+' },
-  { name: 'Бизнес и жизнь', icon: '💼', img: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=400&h=250&fit=crop', count: '11 000+' },
-  { name: 'Тексты и переводы', icon: '✍️', img: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=250&fit=crop', count: '34 000+' },
-  { name: 'Аудио, видео, съемка', icon: '🎥', img: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400&h=250&fit=crop', count: '15 000+' },
-];
-
-const popularTags = ['Веб-дизайн', 'Логотип', 'SEO', 'Wordpress', 'Монтаж видео', 'Контент', 'React'];
-
-const steps = [
-  { icon: <MousePointer size={28} />, title: 'Выберите услугу', desc: 'Тысячи готовых кворков от проверенных специалистов' },
-  { icon: <CreditCard size={28} />, title: 'Оплатите', desc: 'Деньги заморожены — исполнитель получит их только после вашего одобрения' },
-  { icon: <ThumbsUp size={28} />, title: 'Получите результат', desc: '100% гарантия возврата средств, если работа вам не понравится' },
+const homeServices = [
+  { title: 'UI/UX Дизайн мобильного приложения', category: 'Дизайн', price: '5000', author: 'Anna Design', rating: '4.9', variant: 'light' },
+  { title: 'Разработка Telegram ботов на Python', category: 'Backend', price: '12000', author: 'CodeMaster', rating: '5.0', variant: 'lime' },
+  { title: 'SMM Продвижение и стратегия', category: 'Маркетинг', price: '8500', author: 'GlowAgency', rating: '4.8', variant: 'dark' },
+  { title: 'Профессиональный видеомонтаж Reels', category: 'Контент', price: '3000', author: 'VfxKing', rating: '4.7', variant: 'light' },
 ];
 
 const Home = () => {
-  const [query, setQuery] = useState('');
-  const [kworks, setKworks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const { apiFetch } = useAuth();
-
-  useEffect(() => {
-    const fetchKworks = async () => {
-      try {
-        const data = await apiFetch('/kworks');
-        setKworks(data.slice(0, 4));
-      } catch (err) {
-        console.error('Home kworks fetch failed:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchKworks();
-  }, [apiFetch]);
-
   return (
-    <div className="home-page fade-in">
+    <div className="min-h-screen pt-20">
+      <Navbar />
 
-      {/* ───── HERO ───── */}
-      <section className="hero-kwork">
-        <div className="container">
-          <div className="hero-kwork-grid">
-            <motion.div 
-              className="hero-kwork-left"
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="hero-commission-badge">✨ Комиссия всего 5% — лучшее на рынке</div>
-              <h1>Покупайте фриланс-услуги <span className="gradient-text">в один клик</span></h1>
-              <p>Биржа фриланса нового поколения. Безопасная сделка, честная цена, быстрый вывод.</p>
-
-              <div className="hero-search glass">
-                <Search size={20} color="var(--text-secondary)" />
-                <input 
-                  type="text" 
-                  placeholder="Создать сайт, нарисовать логотип, написать текст…"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                />
-                <Link to={`/catalog?q=${query}`} className="btn-primary hero-search-btn">Найти</Link>
-              </div>
-
-              <div className="hero-tags">
-                <span className="tags-label">Популярное:</span>
-                {popularTags.map(tag => (
-                  <Link key={tag} to={`/catalog?q=${tag}`} className="hero-tag">
-                    <Search size={12} /> {tag}
-                  </Link>
+      {/* HERO SECTION */}
+      <section className="bg-white py-24">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+          <div>
+            <h1 className="text-6xl md:text-7xl font-bold leading-none mb-8 tracking-tighter">
+              Найдите идеального исполнителя для <span className="heading-lime">ваших задач.</span>
+            </h1>
+            <p className="text-xl text-secondary opacity-80 mb-10 max-w-lg leading-relaxed">
+              Маркетплейс услуг нового поколения. Прозрачные сделки, проверенные профессионалы и гарантированный результат в стиле Positivus.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button className="btn-primary text-xl">Начать работу</button>
+              <button className="btn-outline text-xl">Найти исполнителя</button>
+            </div>
+          </div>
+          <div className="relative">
+            <div className="w-full aspect-square bg-primary rounded-positivus border-2 border-secondary shadow-positivus flex items-center justify-center p-12 overflow-hidden">
+              <div className="grid grid-cols-2 gap-4 transform rotate-6 scale-110">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="w-40 h-40 bg-white border-2 border-secondary p-4 rounded-positivus shadow-positivus flex flex-col justify-between">
+                    <div className="w-full h-2 bg-secondary/10 rounded"></div>
+                    <div className="w-2/3 h-2 bg-secondary/10 rounded"></div>
+                    <div className="w-full h-20 bg-primary/20 rounded"></div>
+                  </div>
                 ))}
               </div>
-            </motion.div>
-
-            <motion.div 
-              className="hero-kwork-right"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
-            >
-              <div className="hero-stats-float glass">
-                <div className="hero-stat-item"><span className="hs-num gradient-text">5%</span><span className="hs-label">Комиссия</span></div>
-                <div className="hero-stat-item"><span className="hs-num gradient-text">1ч</span><span className="hs-label">Вывод</span></div>
-                <div className="hero-stat-item"><span className="hs-num gradient-text">100%</span><span className="hs-label">Защита</span></div>
-              </div>
-              <img 
-                src={heroImg}
-                alt="Freelancer"
-                className="hero-freelancer-img"
-              />
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ───── CATEGORIES GRID ───── */}
-      <section className="section-block container">
-        <div className="section-header-row">
-          <h2>Выберите рубрику, чтобы начать</h2>
-          <Link to="/catalog" className="view-all-link">Все категории <ArrowRight size={16} /></Link>
+      {/* CATEGORIES / SERVICES */}
+      <section className="max-w-7xl mx-auto px-6 py-32">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-20">
+          <span className="heading-lime text-4xl font-bold">Популярные услуги</span>
+          <p className="text-lg opacity-70 max-w-md">Выбирайте из сотен доступных категорий и заказывайте услуги в один клик с гарантией безопасности.</p>
         </div>
-        <div className="cat-grid">
-          {categories.map((cat, i) => (
-            <Link key={i} to={`/catalog?cat=${cat.name}`} className="cat-card">
-              <img src={cat.img} alt={cat.name} />
-              <div className="cat-card-overlay">
-                <span className="cat-card-name">{cat.name}</span>
-                <span className="cat-card-count">{cat.count} кворков</span>
-              </div>
-            </Link>
+
+        <div className="grid md:grid-cols-2 gap-10">
+          {homeServices.map((service, index) => (
+            <ServiceCard key={index} {...service} />
           ))}
         </div>
       </section>
 
-      {/* ───── HOW IT WORKS ───── */}
-      <section className="how-section">
-        <div className="container">
-          <div className="how-header">
-            <h2>Как решать задачи на Troudo</h2>
-            <p>Идеально подходит для бизнеса и для себя</p>
+      {/* HOW IT WORKS */}
+      <section className="bg-light py-32 border-y border-secondary/5">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-8 mb-20">
+            <span className="heading-lime text-4xl font-bold">Как это работает</span>
           </div>
-          <div className="how-steps">
-            {steps.map((step, i) => (
-              <motion.div 
-                key={i} 
-                className="how-step glass"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-              >
-                <div className="how-step-num">{i + 1}</div>
-                <div className="how-icon">{step.icon}</div>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-              </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-12 text-center">
+            {[
+              { num: '01', title: 'Найдите услугу', text: 'Выберите подходящего специалиста в каталоге или создайте заказ на бирже.' },
+              { num: '02', title: 'Обсудите детали', text: 'Общайтесь напрямую в нашем удобном чате и согласуйте ТЗ.' },
+              { num: '03', title: 'Получите результат', text: 'Оплатите работу только после того, как она будет выполнена полностью.' }
+            ].map((step, i) => (
+              <div key={i} className="flex flex-col items-center">
+                <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-2xl font-bold border-2 border-secondary mb-6">
+                  {step.num}
+                </div>
+                <h3 className="text-2xl font-bold mb-4">{step.title}</h3>
+                <p className="opacity-70 leading-relaxed">{step.text}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ───── POPULAR KWORKS (REAL DATA) ───── */}
-      <section className="section-block container">
-        <div className="section-header-row">
-          <h2>Вдохновляйтесь проектами наших фрилансеров</h2>
-          <Link to="/catalog" className="view-all-link">Смотреть все <ArrowRight size={16} /></Link>
-        </div>
-        <div className="portfolio-grid">
-          {loading ? (
-             [1,2,3,4].map(i => <div key={i} className="portfolio-card glass loading-skeleton" style={{ height: '300px' }} />)
-          ) : kworks.length > 0 ? (
-            kworks.map(kwork => (
-                <Link key={kwork.id} to={`/kwork/${kwork.id}`} className="portfolio-card glass">
-                  <div className="portfolio-img">
-                    <Layers size={48} color="rgba(255,255,255,0.05)" style={{ margin: 'auto' }} />
-                  </div>
-                  <div className="portfolio-info">
-                    <div className="portfolio-bottom">
-                      <span className="portfolio-title">{kwork.title}</span>
-                      <span className="portfolio-price">от {kwork.price} ₽</span>
-                    </div>
-                  </div>
-                </Link>
-              ))
-          ) : (
-            <div className="empty-state glass w-full"><p>Здесь будут отображаться новые кворки.</p></div>
-          )}
-        </div>
-      </section>
-
-      {/* ───── WHY TROUDO ───── */}
-      <section className="why-section container">
-        <div className="why-banner glass">
-          <div className="why-text">
-            <h2>Почему Troudo лучше?</h2>
-            <p>Мы единственная биржа, которая берёт всего 5% комиссии. Все остальные — от 15% до 25%.</p>
-            <div className="why-benefits">
-              <div className="why-item">💰 <span>Комиссия 5% вместо 20%</span></div>
-              <div className="why-item">⚡ <span>Вывод денег за 1 час</span></div>
-              <div className="why-item">🛡️ <span>Эскроу — деньги под защитой</span></div>
-              <div className="why-item">⭐ <span>Проверенные фрилансеры</span></div>
+      {/* CTA SECTION */}
+      <section className="max-w-7xl mx-auto px-6 py-32">
+        <div className="bg-secondary rounded-positivus p-12 md:p-20 text-white relative overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-16 items-center relative z-10">
+            <div>
+              <h2 className="text-5xl md:text-6xl font-bold mb-8 leading-none">Готовы масштабировать свой бизнес?</h2>
+              <p className="text-xl opacity-70 mb-12 leading-relaxed">Присоединяйтесь к тысячам предпринимателей, которые находят лучших фрилансеров на нашей платформе.</p>
+              <button className="bg-primary text-secondary px-10 py-5 rounded-xl text-xl font-bold hover:bg-white hover:scale-105 transition-all shadow-lg active:translate-y-1">Заказать кворк</button>
             </div>
-          </div>
-          <div className="why-visual">
-            <div className="commission-compare">
-              <div className="compare-bar"><span>Troudo</span><div className="bar-track"><div className="bar-fill troudo-bar">5%</div></div></div>
-              <div className="compare-bar"><span>Kwork</span><div className="bar-track"><div className="bar-fill kwork-bar">20%</div></div></div>
-              <div className="compare-bar"><span>Другие</span><div className="bar-track"><div className="bar-fill other-bar">25%</div></div></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                { icon: <ShieldCheck size={28} />, title: 'Безопасность', text: 'Средства депонируются до выполнения.' },
+                { icon: <Zap size={28} />, title: 'Скорость', text: 'Найдите исполнителя за 15 минут.' },
+                { icon: <ArrowLeftRight size={28} />, title: 'Прямой чат', text: 'Общайтесь без посредников.' },
+                { icon: <Star size={28} />, title: 'Рейтинг', text: 'Проверенные отзывы заказчиков.' }
+              ].map((f, i) => (
+                <div key={i} className="bg-white/5 border border-white/10 p-8 rounded-positivus hover:bg-white/10 transition-colors">
+                  <div className="text-primary mb-4">{f.icon}</div>
+                  <h3 className="font-bold text-lg mb-2">{f.title}</h3>
+                  <p className="text-sm opacity-50 font-light">{f.text}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
+      {/* FOOTER */}
+      <footer className="max-w-7xl mx-auto px-6 py-20 border-t border-secondary/5 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
+            <div className="w-4 h-4 bg-primary rounded-sm transform rotate-45"></div>
+          </div>
+          <span className="text-2xl font-bold tracking-tight">Troudo</span>
+        </div>
+        <div className="flex gap-10 opacity-60 font-medium">
+          <a href="#" className="hover:text-primary transition-colors">Условия</a>
+          <a href="#" className="hover:text-primary transition-colors">Конфиденциальность</a>
+          <a href="#" className="hover:text-primary transition-colors">Поддержка</a>
+        </div>
+        <p className="text-sm opacity-40">© 2026 Troudo Marketplace. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
