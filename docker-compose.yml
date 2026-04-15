@@ -122,8 +122,10 @@ services:
       dockerfile: Dockerfile
     container_name: troudo_frontend
     restart: always
-    ports:
-      - "80:80"
+    environment:
+      - VIRTUAL_HOST=troudo.ru,www.troudo.ru
+      - LETSENCRYPT_HOST=troudo.ru,www.troudo.ru
+      - LETSENCRYPT_EMAIL=${EMAIL_USER}
     depends_on:
       - backend
     networks:
@@ -132,6 +134,38 @@ services:
       resources:
         limits:
           memory: 256M
+
+  # 🛡️ REVERSE PROXY & SSL
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - troudo_network
+
+  letsencrypt:
+    image: nginxproxy/acme-companion
+    container_name: nginx_letsencrypt
+    restart: always
+    depends_on:
+      - nginx-proxy
+    environment:
+      - DEFAULT_EMAIL=${EMAIL_USER}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    networks:
+      - troudo_network
 
 networks:
   troudo_network:
