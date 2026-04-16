@@ -1,181 +1,150 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Filter, Clock, MessageSquare, DollarSign, ChevronRight, Send, AlertCircle } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import React from 'react';
+import Header from '../components/Header';
+import { 
+  Building2, Plus, ArrowUpRight, CheckCircle, 
+  Search, Filter, Clock, Tag 
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const categories = ['Все категории', 'Дизайн', 'Разработка и IT', 'Тексты', 'SEO и трафик', 'Соцсети и маркетинг', 'Аудио, видео', 'Бизнес'];
-
 const Exchange = () => {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [selectedProject, setSelectedProject] = useState(null); // Для модалки отклика
-  const [offerData, setOfferData] = useState({ price: '', message: '' });
-  const [offerLoading, setOfferLoading] = useState(false);
-  const [offerError, setOfferError] = useState('');
-
-  const { user, apiFetch, isFreelancer } = useAuth();
-  const location = useLocation();
+  const { user } = useAuth();
   
-  const queryParams = new URLSearchParams(location.search);
-  const initialCat = queryParams.get('cat') || 'Все категории';
-  const [activeCat, setActiveCat] = useState(initialCat);
-
-  useEffect(() => {
-    fetchProjects();
-  }, [activeCat, search]);
-
-  const fetchProjects = async () => {
-    setLoading(true);
-    try {
-      let url = `/projects?q=${search}`;
-      if (activeCat !== 'Все категории') {
-        url += `&category=${encodeURIComponent(activeCat)}`;
-      }
-      const data = await apiFetch(url);
-      setProjects(data);
-    } catch (err) {
-      console.error('Failed to fetch projects:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMakeOffer = async (e) => {
-    e.preventDefault();
-    if (!isFreelancer) {
-        setOfferError('Только фрилансеры могут оставлять отклики.');
-        return;
-    }
-    setOfferLoading(true);
-    setOfferError('');
-    try {
-        await apiFetch(`/projects/${selectedProject.id}/offers`, {
-            method: 'POST',
-            body: JSON.stringify(offerData)
-        });
-        setSelectedProject(null);
-        setOfferData({ price: '', message: '' });
-        fetchProjects(); // Обновляем счетчик предложений
-    } catch (err) {
-        setOfferError(err.message);
-    } finally {
-        setOfferLoading(false);
-    }
-  };
+  const projects = [
+    { 
+      title: 'Нужно собрать базу данных 100 тыс. контактов', 
+      desc: 'Требуется парсинг сайта объявлений. Данные в Excel: телефон, имя, категория.',
+      budget: '15,000 ₽',
+      responses: 12,
+      time: '2 часа назад',
+      hireRate: '85%',
+      buyer: { name: 'IT Solutions', projects: 42 }
+    },
+    { 
+      title: 'Настройка контекстной рекламы в Яндекс.Директ', 
+      desc: 'Для ниши отопительных систем. Бюджет на рекламу 100к. Нужно собрать семантику.',
+      budget: '7,000 ₽',
+      responses: 5,
+      time: '40 минут назад',
+      hireRate: '100%',
+      buyer: { name: 'Global Invest', projects: 3 }
+    },
+  ];
 
   return (
-    <div className="exchange-page container">
-      <section className="exchange-hero">
-        <div className="exchange-hero-content">
-          <h1>Биржа проектов</h1>
-          <p>Найдите идеальный заказ для своей работы или предложите свои услуги</p>
-          <div className="exchange-search-wrap glass">
-            <Search size={20} className="search-icon" />
-            <input 
-              type="text" 
-              placeholder="Поиск по задачам..." 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <button className="btn-primary" onClick={fetchProjects}>Найти</button>
-          </div>
-        </div>
-      </section>
-
-      <div className="exchange-layout">
-        <aside className="exchange-sidebar">
-          <div className="filter-card glass">
-            <div className="filter-header"><Filter size={18} /><h3>Категории</h3></div>
-            <div className="cat-list">
-              {categories.map(cat => (
-                <button key={cat} className={`cat-item ${activeCat === cat ? 'active' : ''}`} onClick={() => setActiveCat(cat)}>
-                  {cat}
-                </button>
-              ))}
+    <div className="min-h-screen bg-light">
+      <Header />
+      
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 pt-28">
+         {/* Head Area */}
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+            <div>
+               <h1 className="text-4xl font-bold mb-2 tracking-tight">Биржа проектов</h1>
+               <p className="opacity-50 font-medium">Найдите подходящую задачу и предложите свои услуги.</p>
             </div>
-          </div>
-        </aside>
-
-        <main className="exchange-main">
-          <div className="results-info">
-            <span>Найдено проектов: <strong>{projects.length}</strong></span>
-          </div>
-
-          {loading ? (
-            <div className="exchange-loading">Загрузка проектов...</div>
-          ) : (
-            <div className="projects-list">
-              {projects.length > 0 ? (
-                projects.map(project => (
-                  <div key={project.id} className="project-card glass">
-                    <div className="project-main-info">
-                      <div className="project-top">
-                        <span className="project-category">{project.category}</span>
-                        <span className="project-date"><Clock size={12} /> {new Date(project.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <h2 className="project-title">{project.title}</h2>
-                      <p className="project-desc">{project.description}</p>
-                      <div className="project-stats">
-                        <div className="stat-item"><MessageSquare size={16} /><span>{project.offersCount} предложений</span></div>
-                        <div className="stat-item"><DollarSign size={16} /><span>Бюджет: <strong>{project.budget} ₽</strong></span></div>
-                      </div>
-                    </div>
-                    <div className="project-actions">
-                      <button 
-                        className="btn-primary" 
-                        onClick={() => setSelectedProject(project)}
-                        disabled={project.clientId === user?.id}
-                      >
-                        {project.clientId === user?.id ? 'Ваш проект' : 'Откликнуться'}
-                      </button>
-                    </div>
+            <div className="flex items-center gap-4">
+               {user?.activeRole === 'client' ? (
+                  <button className="btn-primary flex items-center gap-2 px-8 py-4">
+                     <Plus size={20} /> Создать проект
+                  </button>
+               ) : (
+                  <div className="bg-white border-2 border-secondary rounded-xl p-4 flex items-center gap-6 shadow-sm">
+                     <div className="flex flex-col">
+                        <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Ваши коннекты</span>
+                        <span className="text-xl font-bold">24 / 30</span>
+                     </div>
+                     <button className="bg-primary text-secondary w-10 h-10 rounded-lg flex items-center justify-center border border-secondary shadow-positivus hover:translate-y-1 hover:shadow-none transition-all">
+                        <Plus size={20} />
+                     </button>
                   </div>
-                ))
-              ) : (
-                <div className="no-results glass"><h3>Проектов не найдено</h3></div>
-              )}
+               )}
             </div>
-          )}
-        </main>
-      </div>
+         </div>
 
-      {/* Модалка отклика */}
-      {selectedProject && (
-        <div className="modal-overlay" onClick={() => setSelectedProject(null)}>
-          <div className="modal-content glass" onClick={e => e.stopPropagation()}>
-            <h3>Отклик на проект: {selectedProject.title}</h3>
-            {offerError && <div className="form-error"><AlertCircle size={16}/> {offerError}</div>}
-            <form onSubmit={handleMakeOffer}>
-                <div className="form-group">
-                    <label>Ваша цена (₽)</label>
-                    <input 
-                        type="number" 
-                        required 
-                        value={offerData.price}
-                        onChange={e => setOfferData({...offerData, price: e.target.value})}
-                    />
-                </div>
-                <div className="form-group">
-                    <label>Комментарий к отклику</label>
-                    <textarea 
-                        rows="4" 
-                        placeholder="Почему стоит выбрать вас?" 
-                        required
-                        value={offerData.message}
-                        onChange={e => setOfferData({...offerData, message: e.target.value})}
-                    />
-                </div>
-                <div className="modal-actions">
-                    <button type="button" className="btn-link" onClick={() => setSelectedProject(null)}>Отмена</button>
-                    <button type="submit" className="btn-primary" disabled={offerLoading}>
-                        {offerLoading ? 'Отправка...' : <><Send size={16}/> Отправить предложение</>}
-                    </button>
-                </div>
-            </form>
-          </div>
-        </div>
-      )}
+         <div className="flex flex-col lg:flex-row gap-10">
+            {/* Sidebar Filters */}
+            <aside className="w-full lg:w-72 flex flex-col gap-8">
+               <div className="bg-white border-2 border-secondary rounded-positivus p-6 shadow-positivus">
+                  <h4 className="font-bold flex items-center gap-2 mb-6">
+                     <Filter size={18} className="text-primary" /> Фильтры
+                  </h4>
+                  
+                  <div className="flex flex-col gap-6">
+                     <div>
+                        <label className="text-xs font-bold opacity-40 uppercase mb-3 block">Цена</label>
+                        <div className="flex items-center gap-2">
+                           <input type="text" placeholder="От" className="w-full bg-light border-b border-secondary/10 p-2 text-sm focus:border-primary outline-none" />
+                           <input type="text" placeholder="До" className="w-full bg-light border-b border-secondary/10 p-2 text-sm focus:border-primary outline-none" />
+                        </div>
+                     </div>
+                     
+                     <div className="flex flex-col gap-3">
+                        <label className="text-xs font-bold opacity-40 uppercase block">Уровень покупателя</label>
+                        {['Новичок', 'Опытный', 'Топ-клиент'].map(l => (
+                           <label key={l} className="flex items-center gap-3 cursor-pointer group">
+                              <div className="w-5 h-5 border-2 border-secondary rounded flex items-center justify-center group-hover:bg-primary/20 transition-all"></div>
+                              <span className="text-sm font-medium">{l}</span>
+                           </label>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+            </aside>
+
+            {/* Project List */}
+            <div className="flex-1 flex flex-col gap-6">
+               <div className="flex items-center gap-4 bg-white border-2 border-secondary rounded-xl p-2 px-4 shadow-sm">
+                  <Search size={20} className="opacity-20" />
+                  <input type="text" placeholder="Поиск по задачам..." className="flex-1 bg-transparent py-2 outline-none font-medium" />
+               </div>
+
+               {projects.map((project, i) => (
+                  <div key={i} className="bg-white border-2 border-secondary rounded-positivus p-8 shadow-positivus hover:shadow-2xl transition-all group flex flex-col md:flex-row gap-8">
+                     <div className="flex-1 flex flex-col gap-4">
+                        <div className="flex items-center gap-3">
+                           <span className="bg-primary/20 border border-primary text-secondary text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 uppercase">
+                              <Tag size={12} /> IT & Разработка
+                           </span>
+                           <span className="text-xs opacity-40 font-bold flex items-center gap-1">
+                              <Clock size={14} /> {project.time}
+                           </span>
+                        </div>
+                        <h3 className="text-2xl font-bold group-hover:text-primary transition-colors leading-tight">
+                           {project.title}
+                        </h3>
+                        <p className="opacity-70 text-sm leading-relaxed line-clamp-2">
+                           {project.desc}
+                        </p>
+                        <div className="flex items-center gap-6 mt-2">
+                           <div className="flex flex-col">
+                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Найм</span>
+                              <span className="font-bold flex items-center gap-1 text-sm text-green-500">
+                                 <CheckCircle size={14} /> {project.hireRate}
+                              </span>
+                           </div>
+                           <div className="flex flex-col border-l border-secondary/10 pl-6">
+                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Проектов</span>
+                              <span className="font-bold text-sm">{project.buyer.projects} шт.</span>
+                           </div>
+                           <div className="flex flex-col border-l border-secondary/10 pl-6">
+                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Предложений</span>
+                              <span className="font-bold text-sm text-primary">{project.responses} чел.</span>
+                           </div>
+                        </div>
+                     </div>
+                     <div className="w-full md:w-56 border-t md:border-t-0 md:border-l border-secondary/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-between">
+                        <div>
+                           <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Бюджет проекта</span>
+                           <p className="text-3xl font-bold text-secondary">{project.budget}</p>
+                        </div>
+                        <button className="btn-primary w-full py-4 flex items-center justify-center gap-2 group-hover:shadow-positivus transition-all">
+                           Откликнуться <ArrowUpRight size={18} />
+                        </button>
+                     </div>
+                  </div>
+               ))}
+            </div>
+         </div>
+      </main>
     </div>
   );
 };

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, CheckCircle, AlertCircle, Loader, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/ui/Logo';
 
 const Register = () => {
   const { register } = useAuth();
@@ -12,30 +13,19 @@ const Register = () => {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(null); // { email, token }
+  const [success, setSuccess] = useState(null); 
 
   const update = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
   const toggle = (field) => () => setChecks(c => ({ ...c, [field]: !c[field] }));
 
-  // Валидация пароля
-  const pwdStrength = () => {
-    const p = form.password;
-    if (p.length === 0) return null;
-    if (p.length < 6) return 'weak';
-    if (p.length < 10 || !/[A-Z]/.test(p) || !/[0-9]/.test(p)) return 'medium';
-    return 'strong';
-  };
-  const strength = pwdStrength();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (loading) return; // Prevent double trigger (Race condition fix)
+    if (loading) return;
     setError('');
 
     if (form.password !== form.password2) { setError('Пароли не совпадают'); return; }
     if (form.password.length < 6) { setError('Пароль должен быть минимум 6 символов'); return; }
-    if (!checks.terms) { setError('Примите пользовательское соглашение'); return; }
-    if (!checks.privacy) { setError('Согласитесь на обработку персональных данных'); return; }
+    if (!checks.terms || !checks.privacy) { setError('Необходимо принять условия и политику'); return; }
 
     setLoading(true);
     try {
@@ -48,208 +38,169 @@ const Register = () => {
     }
   };
 
-  const handleResend = async () => {
-    setResendStatus('loading');
-    try {
-      await apiFetch('/auth/resend-verification', {
-        method: 'POST',
-        body: JSON.stringify({ email: success.email })
-      });
-      setResendStatus('success');
-      setTimeout(() => setResendStatus('none'), 3000);
-    } catch (err) {
-      setError(err.message);
-      setResendStatus('none');
-    }
-  };
-
-  // ── Шаг 6: письмо отправлено ────────────────────────────
   if (success) {
     return (
-      <div className="auth-page">
-        <div className="auth-card glass email-sent-card fade-in">
-          <div className="email-sent-icon-wrap">
-            <div className="email-sent-icon">✉️</div>
-            <div className="email-sent-ring"></div>
-          </div>
-          <h2>Проверьте почту</h2>
-          <p className="email-sent-desc">
-            Мы отправили ссылку для подтверждения на <br />
-            <strong className="gradient-text">{success.email}</strong>
-          </p>
+      <div className="min-h-screen bg-light flex flex-col justify-center items-center p-6 font-space">
+        <div className="w-full max-w-xl bg-white border-2 border-secondary rounded-positivus p-12 shadow-positivus text-center animate-in zoom-in duration-500">
+           <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto mb-8 text-6xl shadow-positivus border-2 border-secondary">
+              ✉️
+           </div>
+           <h2 className="text-4xl font-bold mb-4">Проверьте почту</h2>
+           <p className="opacity-60 font-medium mb-10 leading-relaxed">
+             Мы отправили ссылку для подтверждения на <br />
+             <strong className="text-secondary">{success.email}</strong>
+           </p>
 
-          <div className="email-steps glass">
-            <div className="e-step">
-              <span className="e-num">1</span>
-              <span>Найдите письмо от <b>Troudo Team</b></span>
-            </div>
-            <div className="e-step">
-              <span className="e-num">2</span>
-              <span>Нажмите на кнопку подтверждения</span>
-            </div>
-          </div>
+           <div className="bg-light p-6 rounded-xl flex flex-col gap-4 text-left border border-secondary/5 mb-10">
+              <div className="flex items-center gap-4">
+                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center font-bold border border-secondary">1</div>
+                 <p className="font-bold text-sm">Найдите письмо от Troudo</p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center font-bold border border-secondary">2</div>
+                 <p className="font-bold text-sm">Нажмите на кнопку подтверждения</p>
+              </div>
+           </div>
 
-          {resendStatus === 'success' ? (
-            <div className="resend-success animate-bounce-in">
-              <CheckCircle size={16} /> Ссылка отправлена повторно!
-            </div>
-          ) : (
-            <button
-              className="resend-btn-alt"
-              onClick={handleResend}
-              disabled={resendStatus === 'loading'}
-            >
-              {resendStatus === 'loading' ? <Loader size={16} className="spin" /> : <RefreshCw size={16} />}
-              Не пришло письмо? Отправить еще раз
-            </button>
-          )}
-
-          <div className="auth-divider"><span>или</span></div>
-
-          <button
-            className="btn-secondary w-full"
-            onClick={() => setSuccess(null)}
-          >
-            Использовать другой Email
-          </button>
+           <button onClick={() => setSuccess(null)} className="btn-outline w-full py-4 text-lg">
+              Использовать другой Email
+           </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card glass">
-        <div className="auth-logo gradient-text">Troudo</div>
-        <h2>Создать аккаунт</h2>
-        <p className="auth-subtitle">Присоединяйтесь — это бесплатно</p>
-
-        {error && (
-          <div className="auth-error">
-            <AlertCircle size={16} /> {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="auth-form">
-          {/* Email */}
-          <div className="form-group">
-            <label>Email</label>
-            <div className="input-with-icon">
-              <Mail size={17} />
-              <input
-                type="email"
-                placeholder="example@mail.com"
-                value={form.email}
-                onChange={update('email')}
-                required
-                autoComplete="email"
-              />
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className="form-group">
-            <label>Пароль</label>
-            <div className="input-with-icon">
-              <Lock size={17} />
-              <input
-                type={showPwd ? 'text' : 'password'}
-                placeholder="Минимум 6 символов"
-                value={form.password}
-                onChange={update('password')}
-                required
-                style={{ paddingRight: '44px' }}
-                autoComplete="new-password"
-              />
-              <button type="button" className="pass-toggle" onClick={() => setShowPwd(v => !v)}>
-                {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-            {strength && (
-              <div className="pwd-strength">
-                <div className={`pwd-bar ${strength}`}>
-                  <div className="pwd-fill" />
-                </div>
-                <span className={`pwd-label ${strength}`}>
-                  {strength === 'weak' ? 'Слабый' : strength === 'medium' ? 'Средний' : 'Надёжный'}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Confirm Password */}
-          <div className="form-group">
-            <label>Повторите пароль</label>
-            <div className="input-with-icon">
-              <Lock size={17} />
-              <input
-                type={showPwd ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={form.password2}
-                onChange={update('password2')}
-                required
-                autoComplete="new-password"
-              />
-              {form.password2 && (
-                <span className="pass-match" style={{
-                  position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)'
-                }}>
-                  {form.password === form.password2
-                    ? <CheckCircle size={16} color="var(--accent-secondary)" />
-                    : <AlertCircle size={16} color="var(--error)" />}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Checkboxes */}
-          <div className="auth-checkboxes">
-            <label className="auth-checkbox-item" onClick={toggle('terms')}>
-              <div className={`custom-checkbox ${checks.terms ? 'checked' : ''}`}>
-                {checks.terms && <CheckCircle size={12} />}
-              </div>
-              <span>
-                Я принимаю{' '}
-                <Link to="/rules" className="auth-link" onClick={e => e.stopPropagation()}>
-                  пользовательское соглашение
-                </Link>
-              </span>
-            </label>
-            <label className="auth-checkbox-item" onClick={toggle('privacy')}>
-              <div className={`custom-checkbox ${checks.privacy ? 'checked' : ''}`}>
-                {checks.privacy && <CheckCircle size={12} />}
-              </div>
-              <span>
-                Я согласен на{' '}
-                <Link to="/policy" className="auth-link" onClick={e => e.stopPropagation()}>
-                  обработку персональных данных
-                </Link>
-              </span>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            className="btn-primary w-full"
-            disabled={loading}
-            style={{ padding: '15px', fontSize: '16px' }}
-          >
-            {loading ? <><Loader size={18} className="spin" /> Регистрация…</> : 'Зарегистрироваться'}
-          </button>
-        </form>
-
-        <div className="auth-divider"><span>или войти через</span></div>
-        <div className="social-auth">
-          <button className="social-btn-auth">
-            <span style={{ color: '#4285F4', fontSize: '18px', fontWeight: 'bold' }}>G</span> Google
-          </button>
-          <button className="social-btn-auth">
-            <span style={{ color: '#0077FF', fontSize: '18px', fontWeight: 'bold' }}>VK</span> ВКонтакте
-          </button>
+    <div className="min-h-screen bg-light flex flex-col justify-center items-center p-4 md:p-6 font-space">
+      <div className="w-full max-w-2xl animate-in fade-in duration-500 pt-10 pb-20">
+        
+        {/* Logo */}
+        <div className="flex justify-center mb-10">
+           <Link to="/">
+              <Logo className="h-10" />
+           </Link>
         </div>
 
-        <p className="auth-footer">
-          Уже есть аккаунт? <Link to="/login" className="auth-link">Войти</Link>
+        <div className="bg-white border-2 border-secondary rounded-positivus p-8 md:p-12 shadow-positivus relative">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+             <div>
+                <h1 className="text-3xl md:text-5xl font-bold mb-2">Регистрация</h1>
+                <p className="opacity-50 font-medium lowercase">Присоединяйтесь к сообществу профессионалов.</p>
+             </div>
+             <div className="bg-primary/20 text-secondary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-primary h-max">
+                это бесплатно
+             </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border-2 border-red-200 text-red-600 p-4 rounded-xl mb-8 flex items-center gap-2 font-bold text-sm">
+              <AlertCircle size={18} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-8">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-bold uppercase opacity-40">Email адрес</label>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="name@example.com"
+                  className="w-full bg-light border-2 border-transparent focus:border-secondary transition-all rounded-xl py-4 pl-12 pr-4 outline-none font-medium"
+                  value={form.email}
+                  onChange={update('email')}
+                  required
+                />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase opacity-40">Пароль</label>
+                  <div className="relative">
+                    <input
+                      type={showPwd ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="w-full bg-light border-2 border-transparent focus:border-secondary transition-all rounded-xl py-4 pl-12 pr-12 outline-none font-medium"
+                      value={form.password}
+                      onChange={update('password')}
+                      required
+                    />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+                  </div>
+               </div>
+               <div className="flex flex-col gap-2">
+                  <label className="text-xs font-bold uppercase opacity-40">Повторите пароль</label>
+                  <div className="relative">
+                    <input
+                      type={showPwd ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      className="w-full bg-light border-2 border-transparent focus:border-secondary transition-all rounded-xl py-4 pl-12 pr-12 outline-none font-medium"
+                      value={form.password2}
+                      onChange={update('password2')}
+                      required
+                    />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40" size={18} />
+                    <button 
+                      type="button" 
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-secondary/40 hover:text-secondary focus:outline-none"
+                      onClick={() => setShowPwd(!showPwd)}
+                    >
+                      {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+               </div>
+            </div>
+
+            <div className="flex flex-col gap-4 bg-light/50 p-6 rounded-2xl border border-secondary/5">
+                <label className="flex items-start gap-4 cursor-pointer group">
+                  <input type="checkbox" checked={checks.privacy} onChange={toggle('privacy')} className="hidden peer" />
+                  <div className="w-6 h-6 border-2 border-secondary rounded flex-shrink-0 flex items-center justify-center transition-all peer-checked:bg-primary group-hover:bg-light">
+                      {checks.privacy && <CheckCircle size={14} className="text-secondary" />}
+                  </div>
+                  <span className="text-sm font-medium opacity-60 group-hover:opacity-100 transition-all leading-tight">
+                    Я согласен на <Link to="/policy" className="underline hover:text-primary">обработку персональных данных</Link>
+                  </span>
+                </label>
+                <label className="flex items-start gap-4 cursor-pointer group">
+                  <input type="checkbox" checked={checks.terms} onChange={toggle('terms')} className="hidden peer" />
+                  <div className="w-6 h-6 border-2 border-secondary rounded flex-shrink-0 flex items-center justify-center transition-all peer-checked:bg-primary group-hover:bg-light">
+                      {checks.terms && <CheckCircle size={14} className="text-secondary" />}
+                  </div>
+                  <span className="text-sm font-medium opacity-60 group-hover:opacity-100 transition-all leading-tight">
+                    Принимаю <Link to="/rules" className="underline hover:text-primary">пользовательское соглашение</Link>
+                  </span>
+                </label>
+            </div>
+
+            <button
+              type="submit"
+              className="btn-primary w-full py-5 text-xl flex items-center justify-center mt-4"
+              disabled={loading}
+            >
+              {loading ? <Loader className="spin" size={24} /> : <>Создать аккаунт <ArrowRight size={20} /></>}
+            </button>
+          </form>
+
+          <div className="relative my-10 flex items-center">
+             <div className="flex-1 border-t border-secondary/5"></div>
+             <span className="px-4 text-[10px] font-bold uppercase opacity-20 tracking-widest bg-white">или через соцсети</span>
+             <div className="flex-1 border-t border-secondary/5"></div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+             <button className="flex items-center justify-center gap-3 py-4 border-2 border-secondary/5 rounded-xl font-bold text-sm hover:border-secondary hover:bg-light transition-all">
+                <span className="text-blue-500 text-lg">G</span> Google
+             </button>
+             <button className="flex items-center justify-center gap-3 py-4 border-2 border-secondary/5 rounded-xl font-bold text-sm hover:border-secondary hover:bg-light transition-all">
+                <span className="text-blue-600 text-lg">VK</span> ВКонтакте
+             </button>
+          </div>
+        </div>
+
+        <p className="mt-10 text-center text-sm font-bold opacity-40 uppercase tracking-widest">
+           Есть аккаунт? <Link to="/login" className="text-primary hover:underline ml-2">Войти</Link>
         </p>
       </div>
     </div>

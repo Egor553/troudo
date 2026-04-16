@@ -6,24 +6,47 @@
 
 @layer base {
   body {
-    @apply font-space bg-white text-secondary;
+    @apply font-space bg-white text-secondary selection:bg-primary selection:text-secondary;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-secondary text-white px-8 py-4 rounded-xl font-medium hover:bg-opacity-90 transition-all active:translate-y-1;
+    @apply bg-primary text-secondary px-8 py-4 rounded-xl font-bold border-2 border-secondary shadow-positivus hover:translate-y-1 hover:shadow-none transition-all flex items-center justify-center gap-2;
   }
 
   .btn-outline {
-    @apply border border-secondary text-secondary px-8 py-4 rounded-xl font-medium hover:bg-secondary hover:text-white transition-all active:translate-y-1;
+    @apply bg-white text-secondary px-8 py-4 rounded-xl font-bold border-2 border-secondary hover:bg-light transition-all flex items-center justify-center gap-2;
   }
 
   .card-positivus {
-    @apply border border-secondary rounded-positivus p-8 shadow-positivus bg-white transition-all hover:-translate-y-1;
+    @apply border-2 border-secondary rounded-positivus p-8 shadow-positivus bg-white transition-all hover:shadow-2xl;
   }
 
   .heading-lime {
-    @apply bg-primary rounded-lg px-3 py-1 inline-block;
+    @apply bg-primary rounded-lg px-3 py-1 inline-block border border-secondary shadow-[3px_3px_0px_#191A23];
   }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-md;
+  }
+
+  /* Custom scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Animations */
+@keyframes megaMenuFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-mega-menu {
+  animation: megaMenuFade 0.3s ease-out forwards;
 }

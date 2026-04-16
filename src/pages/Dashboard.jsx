@@ -1,89 +1,127 @@
 import React from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
-import { ShoppingBag, Star, Clock, CheckCircle } from 'lucide-react';
+import { 
+  ShoppingBag, Star, Clock, CheckCircle, 
+  ArrowUpRight, AlertCircle, Sparkles, Briefcase, PlusCircle
+} from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+import EmptyState from '../components/ui/EmptyState';
 
 const Dashboard = () => {
-    const stats = [
-        { label: 'Активные заказы', value: '3', icon: <Clock className="text-primary" />, color: 'bg-secondary' },
-        { label: 'Завершено', value: '24', icon: <CheckCircle className="text-primary" />, color: 'bg-secondary' },
-        { label: 'Всего потрачено', value: '45,600 ₽', icon: <Star className="text-primary" />, color: 'bg-secondary' },
-    ];
+  const { user } = useAuth();
+  const currentRole = user?.activeRole || 'client';
 
-    const recentOrders = [
-        { id: '#1284', title: 'Дизайн логотипа для студии', status: 'В работе', price: '3,000 ₽', deadline: '24.04.2026' },
-        { id: '#1285', title: 'Сборка бота на Python', status: 'Проверка', price: '8,500 ₽', deadline: '22.04.2026' },
-        { id: '#1286', title: 'Правки по верстке React', status: 'Завершен', price: '1,500 ₽', deadline: '20.04.2026' },
-    ];
+  // Demo stats logic
+  const sellerStats = [
+    { label: 'Активные заказы', value: '0', icon: <Clock size={20} />, color: 'bg-white' },
+    { label: 'Заработано', value: '0 ₽', icon: <Sparkles size={20} />, color: 'bg-primary' },
+    { label: 'Просмотры кворков', value: '0', icon: <Star size={20} />, color: 'bg-white' },
+  ];
 
-    return (
-        <DashboardLayout>
-            <div className="max-w-6xl">
-                <div className="flex items-center justify-between mb-10">
-                    <div>
-                        <h1 className="text-3xl font-bold mb-2 tracking-tight">Добро пожаловать, Александр! 🍀</h1>
-                        <p className="opacity-50">Вот что происходит с вашими заказами сегодня.</p>
-                    </div>
-                    <button className="btn-primary">Создать заказ</button>
+  const buyerStats = [
+    { label: 'Мои проекты', value: '0', icon: <Briefcase size={20} />, color: 'bg-white' },
+    { label: 'Всего потрачено', value: '0 ₽', icon: <ShoppingBag size={20} />, color: 'bg-primary' },
+    { label: 'Ждут отзыва', value: '0', icon: <AlertCircle size={20} />, color: 'bg-white' },
+  ];
+
+  const currentStats = currentRole === 'freelancer' ? sellerStats : buyerStats;
+
+  // Set to empty to show EmptyState in action based on your requirement
+  const demoOrders = []; 
+
+  return (
+    <DashboardLayout>
+      <div className="flex flex-col gap-10">
+        {/* Welcome Block */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 tracking-tight">Рабочий стол {currentRole === 'freelancer' ? 'продавца' : 'покупателя'}</h1>
+            <p className="opacity-50 font-medium">Рады вас видеть, {user?.name}! 🍀</p>
+          </div>
+          {currentRole === 'client' ? (
+            <Link to="/exchange" className="btn-primary flex items-center gap-2">
+               <PlusCircle size={20} /> Создать проект
+            </Link>
+          ) : (
+            <button className="btn-outline flex items-center gap-2">
+               Мой публичный профиль <ArrowUpRight size={18} />
+            </button>
+          )}
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {currentStats.map((stat, i) => (
+            <div key={i} className={`card-positivus p-8 ${stat.color === 'bg-primary' ? 'bg-primary shadow-positivus border-secondary border-2' : 'bg-white'} flex flex-col justify-between h-40`}>
+              <div className="flex items-center justify-between">
+                <span className={`font-bold text-sm uppercase ${stat.color === 'bg-primary' ? 'opacity-80' : 'opacity-40'}`}>
+                  {stat.label}
+                </span>
+                <div className="p-2 bg-secondary/5 rounded-lg">
+                  {stat.icon}
                 </div>
-
-                {/* Stats Grid */}
-                <div className="grid md:grid-cols-3 gap-8 mb-12">
-                    {stats.map((stat, i) => (
-                        <div key={i} className={`${stat.color} p-8 rounded-positivus shadow-positivus text-white flex items-center justify-between border border-secondary`}>
-                            <div>
-                                <p className="text-sm opacity-60 mb-1">{stat.label}</p>
-                                <p className="text-3xl font-bold">{stat.value}</p>
-                            </div>
-                            <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                                {stat.icon}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Recent Orders */}
-                <div className="bg-white border-2 border-secondary rounded-positivus shadow-positivus overflow-hidden">
-                    <div className="p-8 border-b border-light flex items-center justify-between">
-                        <h3 className="text-xl font-bold">Последние заказы</h3>
-                        <button className="text-sm font-bold text-secondary flex items-center gap-1 hover:underline">
-                            Смотреть все <ShoppingBag size={16} />
-                        </button>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead>
-                                <tr className="bg-light">
-                                    <th className="px-8 py-4 font-bold text-sm">ID</th>
-                                    <th className="px-8 py-4 font-bold text-sm">Проект</th>
-                                    <th className="px-8 py-4 font-bold text-sm">Статус</th>
-                                    <th className="px-8 py-4 font-bold text-sm">Дедлайн</th>
-                                    <th className="px-8 py-4 font-bold text-sm">Бюджет</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentOrders.map((order, i) => (
-                                    <tr key={i} className="border-t border-light hover:bg-light/50 transition-colors cursor-pointer">
-                                        <td className="px-8 py-6 text-sm opacity-50">{order.id}</td>
-                                        <td className="px-8 py-6 font-bold">{order.title}</td>
-                                        <td className="px-8 py-6">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold border-2 ${order.status === 'Завершен' ? 'bg-primary/20 border-primary text-secondary' :
-                                                    order.status === 'В работе' ? 'bg-blue-100 border-blue-500 text-blue-700' :
-                                                        'bg-orange-100 border-orange-500 text-orange-700'
-                                                }`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-8 py-6 text-sm">{order.deadline}</td>
-                                        <td className="px-8 py-6 font-bold">{order.price}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+              </div>
+              <p className="text-3xl font-bold">{stat.value}</p>
             </div>
-        </DashboardLayout>
-    );
+          ))}
+        </div>
+
+        {/* Onboarding Widget (Steps to success) */}
+        {currentRole === 'freelancer' && (
+          <div className="bg-secondary rounded-positivus p-8 text-white relative overflow-hidden shadow-2xl">
+             <div className="relative z-10 max-w-lg">
+                <h3 className="text-2xl font-bold mb-4">5 простых шагов до первого успеха 🚀</h3>
+                <div className="flex flex-col gap-4">
+                   <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-secondary text-xs font-bold">✓</div>
+                      <span className="text-sm font-medium">Заполнить профиль "О себе"</span>
+                   </div>
+                   <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center text-secondary text-xs font-bold">✓</div>
+                      <span className="text-sm font-medium">Загрузить аватар</span>
+                   </div>
+                   <div className="flex items-center gap-3">
+                      <div className="w-6 h-6 border-2 border-white/20 rounded-full flex items-center justify-center text-xs font-bold text-white/40">3</div>
+                      <span className="text-sm font-medium">Создать первый кворк</span>
+                   </div>
+                   <div className="w-full h-2 bg-white/10 rounded-full mt-2 overflow-hidden">
+                      <div className="h-full bg-primary" style={{ width: '40%' }}></div>
+                   </div>
+                </div>
+             </div>
+             <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-primary/20 to-transparent hidden md:block"></div>
+          </div>
+        )}
+
+        {/* Recent Activity / Orders */}
+        <div className="flex flex-col gap-6">
+           <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold">Активные заказы</h3>
+              {demoOrders.length > 0 && <Link to="/orders" className="text-sm font-bold opacity-40 hover:opacity-100 hover:text-primary transition-all">Смотреть все</Link>}
+           </div>
+           
+           <div className="grid grid-cols-1 gap-4">
+              {demoOrders.length > 0 ? (
+                demoOrders.map((order, i) => (
+                  <div key={i} className="bg-white border-2 border-secondary rounded-xl p-6 flex items-center justify-between shadow-sm hover:shadow-positivus transition-all group">
+                     {/* Order content */}
+                  </div>
+                ))
+              ) : (
+                <EmptyState 
+                  icon={currentRole === 'client' ? '🪄' : '📦'} 
+                  title={currentRole === 'client' ? 'У вас нет активных проектов' : 'У вас нет активных заказов'}
+                  subtitle={currentRole === 'client' ? 'Создайте свой первый проект на Бирже, чтобы найти исполнителя.' : 'Здесь будут отображаться заказы, которые вы взяли в работу.'}
+                  actionText={currentRole === 'client' ? 'Создать проект' : 'Найти работу'}
+                  actionPath={currentRole === 'client' ? '/exchange' : '/exchange'}
+                />
+              )}
+           </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
 };
 
 export default Dashboard;

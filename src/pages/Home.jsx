@@ -1,5 +1,6 @@
 import React from 'react';
-import Navbar from '../components/layout/Navbar';
+import Header from '../components/Header';
+import Footer from '../components/layout/Footer';
 import ServiceCard from '../components/ui/ServiceCard';
 import { ArrowLeftRight, ShieldCheck, Zap, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -16,8 +17,8 @@ const Home = () => {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen pt-16 md:pt-20">
-      <Navbar />
+    <div className="min-h-screen bg-white">
+      <Header />
 
       {/* HERO SECTION */}
       <section className="bg-white py-12 md:py-24">
@@ -122,20 +123,7 @@ const Home = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="max-w-7xl mx-auto px-4 md:px-6 py-12 md:py-20 border-t border-secondary/5 flex flex-col items-center gap-8 md:flex-row md:justify-between text-center md:text-left">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center">
-            <div className="w-4 h-4 bg-primary rounded-sm transform rotate-45"></div>
-          </div>
-          <span className="text-2xl font-bold tracking-tight">Troudo</span>
-        </div>
-        <div className="flex flex-wrap justify-center gap-6 md:gap-10 opacity-60 font-medium">
-          <a href="#" className="hover:text-primary transition-colors">Условия</a>
-          <a href="#" className="hover:text-primary transition-colors">Конфиденциальность</a>
-          <a href="#" className="hover:text-primary transition-colors">Поддержка</a>
-        </div>
-        <p className="text-sm opacity-40">© 2026 Troudo Marketplace.</p>
-      </footer>
+      <Footer />
     </div>
   );
 };
