@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Github, Twitter, Send, Globe, Smartphone, Zap } from 'lucide-react';
+import { Twitter, Send, Globe, Smartphone, Zap } from 'lucide-react';
 import Logo from '../ui/Logo';
 
 const Footer = () => {
@@ -27,17 +27,14 @@ const Footer = () => {
                Маркетплейс фриланс-услуг, где идеи превращаются в реальность. 
                Мы создаем среду для профессионального роста и безопасных сделок.
              </p>
-             <div className="flex items-center gap-4">
-                <a href="#" className="w-10 h-10 bg-light rounded-full flex items-center justify-center hover:bg-primary transition-all">
-                   <Send size={18} />
+              <div className="flex gap-4">
+                <a href="#" className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-secondary transition-all">
+                  <Twitter size={20} />
                 </a>
-                <a href="#" className="w-10 h-10 bg-light rounded-full flex items-center justify-center hover:bg-primary transition-all shadow-sm">
-                   <Zap size={18} className="fill-current" />
+                <a href="#" className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-secondary transition-all">
+                  <Send size={20} />
                 </a>
-                <a href="#" className="w-10 h-10 bg-light rounded-full flex items-center justify-center hover:bg-primary transition-all">
-                   <Github size={18} />
-                </a>
-             </div>
+              </div>
           </div>
 
           <div className="flex flex-col gap-6">
