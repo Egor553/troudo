@@ -6,39 +6,67 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Имитация первоначальных данных пользователя
-  const initialUserData = {
-    id: 1,
-    name: 'Александр М.',
-    username: 'alex_trudo',
-    avatar: '👤',
-    balance: 45600,
-    unreadMessages: 2,
-    unreadNotifs: 5,
-    roles: ['client', 'freelancer'],
-    activeRole: 'client', // 'client' (buyer) или 'freelancer' (seller)
-  };
+  // Базовый URL API (в проде может быть другим)
+  const API_URL = '/api/auth';
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    const token = localStorage.getItem('token');
+    
+    if (savedUser && token) {
       setUser(JSON.parse(savedUser));
-    } else {
-      // Для демонстрации при первом запуске установим демо-пользователя
-      // В реальном приложении здесь будет проверка сессии через API
-      // login(initialUserData); 
     }
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
-    const fullUser = { ...initialUserData, ...userData };
-    setUser(fullUser);
-    localStorage.setItem('user', JSON.stringify(fullUser));
+  const login = async ({ email, password }) => {
+    const res = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Ошибка входа');
+
+    const { token, user: userData } = data;
+    
+    // Сохраняем и токен, и данные пользователя
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    
+    return userData;
+  };
+
+  const register = async ({ email, password }) => {
+    const res = await fetch(`${API_URL}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Ошибка регистрации');
+
+    return data; // Возвращаем успех (обычно { email, message })
+  };
+
+  const resendVerification = async (email) => {
+    const res = await fetch(`${API_URL}/resend-verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Ошибка отправки');
+    return data;
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
@@ -53,7 +81,16 @@ export const AuthProvider = ({ children }) => {
   const isLoggedIn = useMemo(() => !!user, [user]);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, switchRole, isLoggedIn, loading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      logout, 
+      register, 
+      resendVerification, 
+      switchRole, 
+      isLoggedIn, 
+      loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
