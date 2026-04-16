@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Twitter, Send, Globe, Smartphone, Zap } from 'lucide-react';
+import { Send, Globe, Smartphone, Zap } from 'lucide-react';
 import Logo from '../ui/Logo';
 
 const Footer = () => {
@@ -29,10 +29,10 @@ const Footer = () => {
              </p>
               <div className="flex gap-4">
                 <a href="#" className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-secondary transition-all">
-                  <Twitter size={20} />
+                  <Send size={20} />
                 </a>
                 <a href="#" className="p-3 bg-white/5 rounded-xl hover:bg-primary hover:text-secondary transition-all">
-                  <Send size={20} />
+                  <Globe size={20} />
                 </a>
               </div>
           </div>

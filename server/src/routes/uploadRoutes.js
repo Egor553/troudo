@@ -15,7 +15,7 @@ const upload = multer({
  * @desc    Upload file to S3/MinIO
  * @access  Private
  */
-router.post('/', auth, upload.single('file'), async (req, res) => {
+router.post('/', auth.authenticateToken, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
