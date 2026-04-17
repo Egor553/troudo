@@ -1,188 +1,173 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
-import { 
-  Star, Clock, Check, Info, ShieldCheck, 
-  ChevronRight, MessageSquare, Heart, Share2 
-} from 'lucide-react';
+import { Check, Clock, Info, Star } from 'lucide-react';
 
 const ServicePage = () => {
-  const [activeTab, setActiveTab] = useState('standard'); // economy, standard, business
+  const [activePackage, setActivePackage] = useState('standard');
 
-  const pricing = {
-    economy: { price: '5,000', delivery: '2 дня', revisions: '1 правка', info: 'Базовая настройка и 1 вариант дизайна.' },
-    standard: { price: '12,000', delivery: '4 дня', revisions: '3 правки', info: 'Полный пакет: исходники + адаптив + 3 варианта дизайна.' },
-    business: { price: '25,000', delivery: '7 дней', revisions: 'Безлимитно', info: 'VIP поддержка: приоритет + брендбук + личный менеджер.' },
+  const packages = {
+    economy: {
+      label: 'Эконом',
+      price: '4 900 ₽',
+      delivery: '3 дня',
+      revisions: '1 правка',
+      description: 'Базовый набор для быстрого старта проекта.',
+    },
+    standard: {
+      label: 'Стандарт',
+      price: '9 900 ₽',
+      delivery: '5 дней',
+      revisions: '3 правки',
+      description: 'Оптимальный пакет с расширенной проработкой и поддержкой.',
+    },
+    business: {
+      label: 'Бизнес',
+      price: '17 900 ₽',
+      delivery: '7 дней',
+      revisions: 'Без ограничений',
+      description: 'Максимальный пакет с приоритетным сопровождением.',
+    },
   };
 
-  const matrix = [
-    { label: 'Исходный код', economy: true, standard: true, business: true },
-    { label: 'Адаптивность', economy: false, standard: true, business: true },
-    { label: 'SEO-оптимизация', economy: false, standard: false, business: true },
-    { label: 'Интеграция API', economy: false, standard: true, business: true },
+  const comparisonRows = [
+    { label: 'Количество экранов/блоков', economy: '1-2', standard: '3-5', business: '5+' },
+    { label: 'Правки', economy: '1', standard: '3', business: 'Без ограничений' },
+    { label: 'Срок выполнения', economy: '3 дня', standard: '5 дней', business: '7 дней' },
+    { label: 'Приоритет в очереди', economy: 'Нет', standard: 'Средний', business: 'Высокий' },
+    { label: 'Поддержка после сдачи', economy: '1 день', standard: '3 дня', business: '7 дней' },
   ];
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-light">
       <Header />
-      
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-12 flex flex-col lg:flex-row gap-12 pt-28">
-        
-        {/* Left Column: Content */}
-        <div className="flex-1 flex flex-col gap-10">
-           {/* Breadcrumbs */}
-           <div className="flex items-center gap-2 text-xs font-bold opacity-40 uppercase tracking-widest">
-              <span className="hover:text-primary cursor-pointer">Главная</span>
-              <ChevronRight size={14} />
-              <span className="hover:text-primary cursor-pointer">Разработка и IT</span>
-              <ChevronRight size={14} />
-              <span className="text-secondary">Скрипты и боты</span>
-           </div>
+      <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pb-12 pt-24 md:px-6 lg:flex-row">
+        <section className="flex-1 space-y-8">
+          <div className="rounded-positivus border-2 border-secondary bg-white p-6 shadow-positivus md:p-8">
+            <h1 className="text-3xl font-bold leading-tight text-secondary md:text-4xl">
+              Разработка адаптивного лендинга под ключ
+            </h1>
+            <div className="mt-3 flex items-center gap-2 text-sm font-medium text-secondary/70">
+              <Star size={14} className="fill-primary text-primary" />
+              <span>4.9</span>
+              <span>(87 отзывов)</span>
+            </div>
+          </div>
 
-           {/* Hero section */}
-           <div>
-              <h1 className="text-4xl md:text-5xl font-bold leading-none mb-6">Создание Telegram бота на Python под ключ</h1>
-              <div className="flex items-center gap-6">
-                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center font-bold text-secondary border border-secondary">А</div>
-                    <span className="font-bold">Anna Dev</span>
-                 </div>
-                 <div className="flex items-center gap-1">
-                    <Star size={16} className="fill-primary text-primary" />
-                    <span className="font-bold">4.9</span>
-                    <span className="opacity-40 text-sm">(124 отзыва)</span>
-                 </div>
-                 <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-primary/20 text-secondary text-xs font-bold rounded border border-primary">
-                    ВЫСШИЙ РЕЙТИНГ
-                 </div>
-              </div>
-           </div>
+          <div className="overflow-hidden rounded-positivus border-2 border-secondary bg-white shadow-positivus">
+            <div className="aspect-video w-full bg-light">
+              <img
+                src="https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?auto=format&fit=crop&w=1200&q=80"
+                alt="Превью услуги"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
 
-           {/* Main Image */}
-           <div className="aspect-video w-full bg-light rounded-positivus border-2 border-secondary overflow-hidden shadow-positivus relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-2/3 h-2/3 bg-white border-2 border-secondary rounded-xl flex items-center justify-center">
-                    <div className="text-8xl">🤖</div>
-                 </div>
-              </div>
-           </div>
+          <div className="rounded-positivus border-2 border-secondary bg-white p-6 shadow-positivus md:p-8">
+            <h2 className="text-2xl font-bold text-secondary">Описание</h2>
+            <p className="mt-4 leading-relaxed text-secondary/80">
+              Создам современный лендинг с продуманной структурой, адаптацией под мобильные
+              устройства и базовой SEO-оптимизацией. Подходит для запуска рекламы, презентации
+              продукта и увеличения конверсии.
+            </p>
+            <ul className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {['Анализ ниши', 'Дизайн и верстка', 'Адаптив под мобильные', 'Подключение форм'].map(
+                (item) => (
+                  <li key={item} className="flex items-center gap-2 text-sm font-medium text-secondary">
+                    <Check size={16} className="text-primary" />
+                    {item}
+                  </li>
+                ),
+              )}
+            </ul>
+          </div>
 
-           {/* Description */}
-           <div className="flex flex-col gap-6 max-w-3xl">
-              <h3 className="text-2xl font-bold underline decoration-primary decoration-4 underline-offset-4">О кворке</h3>
-              <p className="text-lg leading-relaxed opacity-80">
-                 Я предлагаю профессиональную разработку Telegram ботов любой сложности. 
-                 Работаю на Python с использованием библиотек aiogram или telebot. 
-                 Опыт работы более 3 лет, создано более 100 ботов для бизнеса и личного пользования.
-              </p>
-              <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 {['Интеграция платежей', 'Базы данных (PostgreSQL)', 'Админ-панель', 'Рассылки', 'ИИ-функционал'].map(f => (
-                   <li key={f} className="flex items-center gap-2 font-medium">
-                      <Check size={18} className="text-primary" /> {f}
-                   </li>
-                 ))}
-              </ul>
-           </div>
-
-           {/* Comparison Matrix */}
-           <div className="bg-light/30 border-2 border-secondary rounded-positivus p-8 mt-6">
-              <h3 className="text-2xl font-bold mb-8">Сравнение пакетов</h3>
-              <table className="w-full text-left">
-                 <thead>
-                    <tr className="border-b-2 border-secondary/10">
-                       <th className="pb-4 font-bold opacity-40 uppercase text-xs">Параметр</th>
-                       <th className="pb-4 text-center font-bold">Эконом</th>
-                       <th className="pb-4 text-center font-bold">Стандарт</th>
-                       <th className="pb-4 text-center font-bold">Бизнес</th>
+          <div className="rounded-positivus border-2 border-secondary bg-white p-6 shadow-positivus md:p-8">
+            <h2 className="text-2xl font-bold text-secondary">Сравнение пакетов</h2>
+            <div className="mt-5 overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse">
+                <thead>
+                  <tr className="border-b border-secondary/15 text-left">
+                    <th className="pb-3 text-xs font-bold uppercase tracking-wider text-secondary/50">
+                      Параметр
+                    </th>
+                    <th className="pb-3 text-center text-sm font-bold text-secondary">Эконом</th>
+                    <th className="pb-3 text-center text-sm font-bold text-secondary">Стандарт</th>
+                    <th className="pb-3 text-center text-sm font-bold text-secondary">Бизнес</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonRows.map((row) => (
+                    <tr key={row.label} className="border-b border-secondary/10">
+                      <td className="py-3 pr-4 text-sm font-medium text-secondary/80">{row.label}</td>
+                      <td className="py-3 text-center text-sm text-secondary">{row.economy}</td>
+                      <td className="py-3 text-center text-sm text-secondary">{row.standard}</td>
+                      <td className="py-3 text-center text-sm text-secondary">{row.business}</td>
                     </tr>
-                 </thead>
-                 <tbody>
-                    {matrix.map((row) => (
-                      <tr key={row.label} className="border-b border-secondary/5">
-                        <td className="py-4 font-medium opacity-70">{row.label}</td>
-                        <td className="py-4 text-center">{row.economy ? <Check className="mx-auto text-primary" /> : <X className="mx-auto opacity-20" size={16} />}</td>
-                        <td className="py-4 text-center">{row.standard ? <Check className="mx-auto text-primary" /> : <X className="mx-auto opacity-20" size={16} />}</td>
-                        <td className="py-4 text-center">{row.business ? <Check className="mx-auto text-primary" /> : <X className="mx-auto opacity-20" size={16} />}</td>
-                      </tr>
-                    ))}
-                 </tbody>
+                  ))}
+                </tbody>
               </table>
-           </div>
+            </div>
+          </div>
 
-           {/* Instructions for order */}
-           <div className="bg-primary/10 border-2 border-primary rounded-positivus p-8">
-              <div className="flex items-center gap-3 mb-4">
-                 <Info className="text-secondary" />
-                 <h3 className="text-2xl font-bold">Что нужно для заказа</h3>
-              </div>
-              <p className="font-medium opacity-70">Пожалуйста, подготовьте краткое ТЗ: описание логики бота, список команд и данные для тестов. Если нужен хостинг, я помогу с настройкой VDS.</p>
-           </div>
+          <div className="rounded-positivus border-2 border-primary bg-primary/10 p-6 shadow-positivus md:p-8">
+            <div className="mb-4 flex items-center gap-2">
+              <Info size={18} className="text-secondary" />
+              <h2 className="text-2xl font-bold text-secondary">Что нужно для заказа</h2>
+            </div>
+            <ul className="space-y-2 text-sm font-medium text-secondary/80">
+              <li>1. Краткое описание проекта и цели страницы.</li>
+              <li>2. Примеры сайтов/дизайнов, которые вам нравятся.</li>
+              <li>3. Тексты, логотип и фирменные материалы (если есть).</li>
+              <li>4. Контакты для заявок и пожелания по срокам.</li>
+            </ul>
+          </div>
         </div>
 
-        {/* Right Column: Sticky Sidebar with Pricing */}
-        <aside className="w-full lg:w-[400px] flex flex-col gap-6">
-           <div className="sticky top-28 bg-white border-2 border-secondary rounded-positivus shadow-positivus overflow-hidden flex flex-col">
-              {/* Tabs */}
-              <div className="flex border-b-2 border-secondary">
-                 {['economy', 'standard', 'business'].map((t) => (
-                   <button 
-                     key={t}
-                     onClick={() => setActiveTab(t)}
-                     className={`flex-1 py-4 font-bold text-xs uppercase tracking-widest transition-all ${
-                       activeTab === t ? 'bg-primary text-secondary' : 'bg-white hover:bg-light opacity-40'
-                     }`}
-                   >
-                     {t === 'economy' ? 'Эконом' : t === 'standard' ? 'Стандарт' : 'Бизнес'}
-                   </button>
-                 ))}
+        <aside className="w-full lg:w-[360px]">
+          <div className="sticky top-24 rounded-positivus border-2 border-secondary bg-white shadow-positivus">
+            <div className="grid grid-cols-3 border-b border-secondary/15">
+              {Object.entries(packages).map(([key, value]) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setActivePackage(key)}
+                  className={`px-2 py-3 text-center text-xs font-bold uppercase tracking-wider transition ${
+                    activePackage === key
+                      ? 'bg-primary text-secondary'
+                      : 'text-secondary/50 hover:bg-light hover:text-secondary'
+                  }`}
+                >
+                  {value.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="space-y-5 p-6">
+              <p className="text-3xl font-bold text-secondary">{packages[activePackage].price}</p>
+              <p className="text-sm leading-relaxed text-secondary/70">
+                {packages[activePackage].description}
+              </p>
+
+              <div className="space-y-2 rounded-xl border border-secondary/15 bg-light p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="flex items-center gap-2 text-secondary/60">
+                    <Clock size={14} />
+                    Срок
+                  </span>
+                  <span className="font-semibold text-secondary">{packages[activePackage].delivery}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-secondary/60">Правки</span>
+                  <span className="font-semibold text-secondary">{packages[activePackage].revisions}</span>
+                </div>
               </div>
 
-              {/* Price Area */}
-              <div className="p-8 flex flex-col gap-6">
-                 <div className="flex items-center justify-between">
-                    <h4 className="text-3xl font-bold">{pricing[activeTab].price} ₽</h4>
-                    <span className="text-sm font-bold opacity-40">от 500 ₽ / час</span>
-                 </div>
-                 
-                 <p className="text-sm font-medium leading-relaxed opacity-60">
-                    {pricing[activeTab].info}
-                 </p>
-
-                 <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between text-sm font-bold">
-                       <span className="flex items-center gap-2 opacity-40"><Clock size={16} /> Срок выполнения</span>
-                       <span>{pricing[activeTab].delivery}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm font-bold">
-                       <span className="flex items-center gap-2 opacity-40"><RefreshCw size={16} /> Количество правок</span>
-                       <span>{pricing[activeTab].revisions}</span>
-                    </div>
-                 </div>
-
-                 <button className="btn-primary w-full py-5 text-lg shadow-positivus hover:translate-y-1 hover:shadow-none transition-all">
-                    Заказать за {pricing[activeTab].price} ₽
-                 </button>
-
-                 <div className="flex items-center justify-center gap-6 mt-2">
-                    <button className="flex items-center gap-2 text-sm font-bold opacity-40 hover:opacity-100 transition-all hover:text-red-500">
-                       <Heart size={18} /> В избранное
-                    </button>
-                    <button className="flex items-center gap-2 text-sm font-bold opacity-40 hover:opacity-100 transition-all hover:text-primary">
-                       <Share2 size={18} /> Поделиться
-                    </button>
-                 </div>
-              </div>
-              
-              <div className="bg-light p-4 text-center border-t border-secondary/10">
-                 <p className="text-xs font-bold opacity-40 flex items-center justify-center gap-2 uppercase tracking-widest">
-                    <ShieldCheck size={14} className="text-primary" /> Безопасная сделка
-                 </p>
-              </div>
-           </div>
-
-           {/* Message Seller */}
-           <button className="w-full bg-secondary text-white py-5 rounded-positivus font-bold flex items-center justify-center gap-3 hover:bg-opacity-90 transition-all shadow-positivus hover:translate-y-1 hover:shadow-none">
-              <MessageSquare size={20} className="text-primary" /> Написать продавцу
-           </button>
+              <button type="button" className="btn-primary w-full">
+                Заказать
+              </button>
+            </div>
+          </div>
         </aside>
       </main>
     </div>

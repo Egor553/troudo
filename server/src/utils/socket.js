@@ -47,6 +47,16 @@ const initSocket = (server) => {
             socket.to(dealId).emit('typing_stop', { dealId, userId: socket.userId });
         });
 
+        socket.on('send_message', ({ receiverId, text }) => {
+            if (!receiverId || !text) return;
+            emitToUser(receiverId, 'message:new', {
+                senderId: socket.userId,
+                receiverId,
+                text,
+                createdAt: new Date().toISOString(),
+            });
+        });
+
         socket.on('disconnect', () => {
             logger.info(`🔌 User disconnected: ${socket.userId}`);
             userSockets.delete(socket.userId);

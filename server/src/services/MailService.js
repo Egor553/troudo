@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const logger = require('../utils/logger');
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;

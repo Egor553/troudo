@@ -8,126 +8,207 @@ datasource db {
 }
 
 enum Role {
-  client
-  freelancer
-  admin
+  buyer
+  seller
 }
 
-enum DealStatus {
-  created
+enum OrderStatus {
+  pending
   active
-  submitted
   completed
-  dispute
+  cancelled
+}
+
+enum NotificationType {
+  system
+  order
+  message
+  proposal
 }
 
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  password       String
-  name           String?
-  username       String?  @unique
-  avatar         String?  @default("👤")
-  balance        Decimal  @default(0) @db.Decimal(12, 2)
-  activeRole     Role     @default(client)
-  roles          Role[]   @default([client, freelancer])
-  bio            String?
-  specialization String?
-  isVerified            Boolean   @default(false)
-  verificationToken     String?   @unique
-  verificationExpires   DateTime?
-  lastVerificationSent  DateTime?
-  lastSeen              DateTime  @default(now())
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                 String             @id @default(uuid())
+  email              String             @unique
+  password           String
+  username           String             @unique
+  role               Role               @default(buyer)
+  avatar             String?
+  cover              String?
+  bio                String?            @db.VarChar(1200)
+  skills             String[]           @default([])
+  balance            Decimal            @default(0) @db.Decimal(12, 2)
+  rating             Float              @default(0)
+  isVerified         Boolean            @default(false)
+  verificationToken  String?            @unique
+  verificationExpires DateTime?
+  lastVerificationSent DateTime?
+  createdAt          DateTime           @default(now())
+  profileSettings    ProfileSettings?
+  services           Service[]
+  buyerOrders        Order[]            @relation("BuyerOrders")
+  sellerOrders       Order[]            @relation("SellerOrders")
+  buyerReviews       Review[]           @relation("BuyerReviews")
+  sellerReviews      Review[]           @relation("SellerReviews")
+  sentMessages       Message[]          @relation("SentMessages")
+  receivedMessages   Message[]          @relation("ReceivedMessages")
+  conversationsAs1   Conversation[]     @relation("ConversationUser1")
+  conversationsAs2   Conversation[]     @relation("ConversationUser2")
+  projects           Project[]
+  proposals          Proposal[]
+  connects           Connects?
+  notifications      Notification[]
+  favorites          Favorite[]
+  soldFavorites      Favorite[]         @relation("FavoriteSeller")
+}
 
-  projects          Project[]
-  kworks            Kwork[]
-  offers            Offer[]
-  dealsAsClient     Deal[]        @relation("ClientDeals")
-  dealsAsFreelancer Deal[]        @relation("FreelancerDeals")
-  transactions      Transaction[]
-  sentMessages      ChatMessage[]
+model ProfileSettings {
+  id            String @id @default(uuid())
+  userId         String @unique
+  country        String?
+  city           String?
+  timezone       String?
+  workStart      String?
+  workEnd        String?
+  phoneVerified  Boolean @default(false)
+  user           User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Service {
+  id                String      @id @default(uuid())
+  userId            String
+  title             String
+  description       String      @db.Text
+  priceBasic        Decimal     @db.Decimal(12, 2)
+  priceStandard     Decimal     @db.Decimal(12, 2)
+  pricePremium      Decimal     @db.Decimal(12, 2)
+  deliveryBasic     Int
+  deliveryStandard  Int
+  deliveryPremium   Int
+  revisionsBasic    Int
+  revisionsStandard Int
+  revisionsPremium  Int
+  categoryId        String
+  views             Int         @default(0)
+  sales             Int         @default(0)
+  isActive          Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  seller            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category          Category    @relation(fields: [categoryId], references: [id])
+  orders            Order[]
+  favorites         Favorite[]
+}
+
+model Category {
+  id          String      @id @default(uuid())
+  name        String
+  parentId    String?
+  icon        String?
+  isTrending  Boolean     @default(false)
+  parent      Category?   @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[]  @relation("CategoryTree")
+  services    Service[]
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  buyerId    String
+  sellerId   String
+  serviceId  String
+  status     OrderStatus @default(pending)
+  price      Decimal     @db.Decimal(12, 2)
+  deadline   DateTime
+  createdAt  DateTime    @default(now())
+  buyer      User        @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller     User        @relation("SellerOrders", fields: [sellerId], references: [id], onDelete: Cascade)
+  service    Service     @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  review     Review?
+}
+
+model Review {
+  id         String    @id @default(uuid())
+  orderId    String    @unique
+  buyerId    String
+  sellerId   String
+  rating     Int
+  text       String    @db.Text
+  createdAt  DateTime  @default(now())
+  order      Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  buyer      User      @relation("BuyerReviews", fields: [buyerId], references: [id], onDelete: Cascade)
+  seller     User      @relation("SellerReviews", fields: [sellerId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id          String    @id @default(uuid())
+  senderId    String
+  receiverId  String
+  text        String    @db.Text
+  isRead      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  sender      User      @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User      @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  user1Id   String
+  user2Id   String
+  updatedAt DateTime  @updatedAt
+  user1     User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2     User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  @@unique([user1Id, user2Id])
 }
 
 model Project {
-  id          String   @id @default(uuid())
+  id          String     @id @default(uuid())
+  buyerId     String
   title       String
-  description String   @db.Text
-  budget      Decimal  @db.Decimal(12, 2)
-  category    String
-  status      String   @default("open") // open, in_progress, closed
-  createdAt   DateTime @default(now())
-
-  clientId String
-  client   User     @relation(fields: [clientId], references: [id])
-  offers   Offer[]
-  deals    Deal[]
+  description String     @db.Text
+  budgetMin   Decimal    @db.Decimal(12, 2)
+  budgetMax   Decimal    @db.Decimal(12, 2)
+  createdAt   DateTime   @default(now())
+  buyer       User       @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  proposals   Proposal[]
 }
 
-model Offer {
-  id           String   @id @default(uuid())
-  price        Decimal  @db.Decimal(12, 2)
-  message      String   @db.Text
-  createdAt    DateTime @default(now())
-
-  projectId    String
-  project      Project @relation(fields: [projectId], references: [id])
-  freelancerId String
-  freelancer   User    @relation(fields: [freelancerId], references: [id])
+model Proposal {
+  id         String    @id @default(uuid())
+  projectId  String
+  sellerId   String
+  text       String    @db.Text
+  price      Decimal   @db.Decimal(12, 2)
+  createdAt  DateTime  @default(now())
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  seller     User      @relation(fields: [sellerId], references: [id], onDelete: Cascade)
 }
 
-model Kwork {
-  id          String   @id @default(uuid())
-  title       String
-  description String   @db.Text
-  price       Decimal  @db.Decimal(12, 2)
-  category    String
-  createdAt   DateTime @default(now())
-
-  freelancerId String
-  freelancer   User   @relation(fields: [freelancerId], references: [id])
+model Connects {
+  id         String  @id @default(uuid())
+  userId     String  @unique
+  available  Int     @default(0)
+  total      Int     @default(0)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Deal {
-  id        String     @id @default(uuid())
-  amount    Decimal    @db.Decimal(12, 2)
-  status    DealStatus @default(created)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-
-  projectId    String?
-  project      Project? @relation(fields: [projectId], references: [id])
-  kworkId      String?
-  clientId     String
-  client       User     @relation("ClientDeals", fields: [clientId], references: [id])
-  freelancerId String
-  freelancer   User     @relation("FreelancerDeals", fields: [freelancerId], references: [id])
-  messages     ChatMessage[]
-  
-  paymentId     String?
-  paymentStatus String?  @default("pending") // pending, succeeded, canceled
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String
+  type       NotificationType @default(system)
+  text       String           @db.Text
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model ChatMessage {
-  id        String   @id @default(uuid())
-  text      String   @db.Text
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+model Favorite {
+  id         String    @id @default(uuid())
+  userId     String
+  serviceId  String?
+  sellerId   String?
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service    Service?  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  seller     User?     @relation("FavoriteSeller", fields: [sellerId], references: [id], onDelete: Cascade)
 
-  dealId   String
-  deal     Deal   @relation(fields: [dealId], references: [id])
-  senderId String
-  sender   User   @relation(fields: [senderId], references: [id])
-}
-
-model Transaction {
-  id          String   @id @default(uuid())
-  amount      Decimal  @db.Decimal(12, 2)
-  type        String // deposit, withdrawal, payment, refund
-  description String? // Added for audit trail
-  createdAt   DateTime @default(now())
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  @@unique([userId, serviceId])
+  @@unique([userId, sellerId])
 }

@@ -1,32 +1,40 @@
 import React from 'react';
 import Header from '../components/Header';
-import { 
-  Building2, Plus, ArrowUpRight, CheckCircle, 
-  Search, Filter, Clock, Tag 
-} from 'lucide-react';
+import { Plus, ArrowUpRight, Search, Filter, Clock, Tag, User2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Exchange = () => {
   const { user } = useAuth();
-  
+
+  const connectsLeft = 24;
+
   const projects = [
-    { 
-      title: 'Нужно собрать базу данных 100 тыс. контактов', 
+    {
+      title: 'Нужно собрать базу данных 100 тыс. контактов',
       desc: 'Требуется парсинг сайта объявлений. Данные в Excel: телефон, имя, категория.',
-      budget: '15,000 ₽',
+      budgetMin: '8 000 ₽',
+      budgetMax: '15 000 ₽',
       responses: 12,
       time: '2 часа назад',
-      hireRate: '85%',
-      buyer: { name: 'IT Solutions', projects: 42 }
+      buyer: { name: 'IT Solutions', projects: 42, country: 'Россия' },
     },
-    { 
-      title: 'Настройка контекстной рекламы в Яндекс.Директ', 
+    {
+      title: 'Настройка контекстной рекламы в Яндекс.Директ',
       desc: 'Для ниши отопительных систем. Бюджет на рекламу 100к. Нужно собрать семантику.',
-      budget: '7,000 ₽',
+      budgetMin: '4 000 ₽',
+      budgetMax: '7 000 ₽',
       responses: 5,
       time: '40 минут назад',
-      hireRate: '100%',
-      buyer: { name: 'Global Invest', projects: 3 }
+      buyer: { name: 'Global Invest', projects: 3, country: 'Казахстан' },
+    },
+    {
+      title: 'Создать лендинг для IT-стартапа',
+      desc: 'Нужен современный одностраничник: структура, дизайн, адаптив и подключение формы.',
+      budgetMin: '10 000 ₽',
+      budgetMax: '18 000 ₽',
+      responses: 9,
+      time: '1 час назад',
+      buyer: { name: 'StartLab', projects: 11, country: 'Беларусь' },
     },
   ];
 
@@ -49,8 +57,8 @@ const Exchange = () => {
                ) : (
                   <div className="bg-white border-2 border-secondary rounded-xl p-4 flex items-center gap-6 shadow-sm">
                      <div className="flex flex-col">
-                        <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Ваши коннекты</span>
-                        <span className="text-xl font-bold">24 / 30</span>
+                        <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Осталось откликов (connects)</span>
+                        <span className="text-xl font-bold">{connectsLeft} / 30</span>
                      </div>
                      <button className="bg-primary text-secondary w-10 h-10 rounded-lg flex items-center justify-center border border-secondary shadow-positivus hover:translate-y-1 hover:shadow-none transition-all">
                         <Plus size={20} />
@@ -116,25 +124,29 @@ const Exchange = () => {
                         </p>
                         <div className="flex items-center gap-6 mt-2">
                            <div className="flex flex-col">
-                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Найм</span>
-                              <span className="font-bold flex items-center gap-1 text-sm text-green-500">
-                                 <CheckCircle size={14} /> {project.hireRate}
+                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Откликов</span>
+                              <span className="font-bold text-sm text-primary">{project.responses}</span>
+                           </div>
+                           <div className="flex flex-col border-l border-secondary/10 pl-6">
+                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Заказчик</span>
+                              <span className="font-bold text-sm flex items-center gap-1">
+                                <User2 size={14} className="opacity-50" /> {project.buyer.name}
                               </span>
                            </div>
                            <div className="flex flex-col border-l border-secondary/10 pl-6">
-                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Проектов</span>
-                              <span className="font-bold text-sm">{project.buyer.projects} шт.</span>
-                           </div>
-                           <div className="flex flex-col border-l border-secondary/10 pl-6">
-                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Предложений</span>
-                              <span className="font-bold text-sm text-primary">{project.responses} чел.</span>
+                              <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Данные заказчика</span>
+                              <span className="font-bold text-sm">
+                                {project.buyer.projects} проектов, {project.buyer.country}
+                              </span>
                            </div>
                         </div>
                      </div>
                      <div className="w-full md:w-56 border-t md:border-t-0 md:border-l border-secondary/10 pt-6 md:pt-0 md:pl-8 flex flex-col justify-between">
                         <div>
-                           <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Бюджет проекта</span>
-                           <p className="text-3xl font-bold text-secondary">{project.budget}</p>
+                           <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">Бюджет (мин/макс)</span>
+                           <p className="text-2xl font-bold text-secondary">
+                             {project.budgetMin} - {project.budgetMax}
+                           </p>
                         </div>
                         <button className="btn-primary w-full py-4 flex items-center justify-center gap-2 group-hover:shadow-positivus transition-all">
                            Откликнуться <ArrowUpRight size={18} />
